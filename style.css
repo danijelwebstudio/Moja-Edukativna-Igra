@@ -1,0 +1,131 @@
+/* Definicija pastelne palete i osnovnih stilova */
+:root {
+    --color-bg-light: #f7f9fc; /* Skoro bela pozadina */
+    --color-primary-start: #b3e0e6; /* Svetloplava/Mint */
+    --color-primary-end: #ffe4e1;   /* Svetloružičasta/Bež */
+    --color-text: #5a5a5a;
+    --color-button-blue: #a2d9ff;
+    --color-button-pink: #ffc2e2;
+    --color-button-mint: #b9fbc0;
+    --color-button-yellow: #fff3b0;
+    --shadow-soft: 0 8px 15px rgba(0, 0, 0, 0.1);
+    --border-radius-large: 30px;
+}
+
+body {
+    font-family: 'Dosis', sans-serif; /* Prijateljski, dečiji font */
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(135deg, var(--color-primary-start) 0%, var(--color-primary-end) 100%);
+    color: var(--color-text);
+    overflow: hidden; /* Sprečava pojavu scrollbara zbog lebdećih elemenata */
+}
+
+/* Kontejner igre */
+.game-container {
+    padding: 20px;
+    max-width: 1200px;
+    width: 100%;
+    z-index: 10;
+}
+
+/* Naslov u dečijem stilu */
+.main-title {
+    font-size: clamp(2.5rem, 8vw, 5rem); /* Responzivna veličina fonta */
+    font-weight: 700;
+    margin-bottom: 50px;
+    color: #4a4e69; /* Tamnija, ali i dalje mekana boja */
+    text-shadow: 2px 2px 5px rgba(255, 255, 255, 0.5);
+    animation: floating 3s ease-in-out infinite alternate; /* Animacija lebdenja */
+}
+
+/* Raspored dugmića (Flexbox/Grid za responzivnost) */
+.mini-game-selection {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responzivni grid */
+    gap: 30px;
+    padding: 20px;
+}
+
+/* Stil za velika dugmad (ergonomski za touchscreen) */
+.game-button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 200px; /* Velika visina za lakši dodir */
+    padding: 20px;
+    border-radius: var(--border-radius-large);
+    box-shadow: var(--shadow-soft);
+    text-decoration: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+}
+
+/* Boje za pojedinačna dugmad */
+.color-find { background-color: var(--color-button-blue); }
+.path-follow { background-color: var(--color-button-pink); }
+.sound-recognize { background-color: var(--color-button-mint); }
+.shape-arrange { background-color: var(--color-button-yellow); }
+.coming-soon { background-color: #fce1a8; opacity: 0.8; } /* Blago prigušena za dodatne igre */
+
+/* Hover/Focus efekat (Nežna animacija) */
+.game-button:hover,
+.game-button:focus {
+    transform: translateY(-5px); /* Lagano podizanje */
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15); /* Jača senka */
+}
+
+/* Ikonice (uvećane za bolju vidljivost) */
+.game-button .icon {
+    font-size: 4rem; /* Izuzetno velika ikonica */
+    margin-bottom: 10px;
+    line-height: 1; /* Sprečava dodatni razmak */
+}
+
+.game-button .button-text {
+    text-align: center;
+}
+
+/* --- Animacije (CSS Keyframes) --- */
+
+/* 1. Plutajuća animacija za naslov */
+@keyframes floating {
+    0% { transform: translateY(0px); }
+    100% { transform: translateY(-15px); }
+}
+
+/* 2. Animacija za pozadinske oblike (nevidljivi elementi u body/main) */
+/* Primer: Dodajte elemente sa klasom .background-shape u HTML za ovo */
+/*
+.background-shape {
+    position: absolute;
+    opacity: 0.5;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    animation: slow-float 20s infinite linear;
+}
+
+@keyframes slow-float {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(20px, -20px) rotate(360deg); }
+}
+*/
+
+/* Media Queries za manji ekran (npr. mobilni telefon) */
+@media (max-width: 600px) {
+    .mini-game-selection {
+        grid-template-columns: 1fr; /* Stacking dugmića vertikalno */
+    }
+    .game-button {
+        height: 150px; /* Malo manja visina, ali i dalje velika */
+    }
+}

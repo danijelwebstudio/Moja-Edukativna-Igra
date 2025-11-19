@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prati Putanju — Glatko Praćenje</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ----------------------------------------------------------------------------------
+       CSS STILOVI (Prilagođeno da se uklopi sa Dosis fontom i Index stranicom)
+       ---------------------------------------------------------------------------------- */
+    :root{
+      /* Boje iz NadjiBoju.html */
+      --color-bg-light: #f0f8ff; /* Veoma svetlo plava, čista pozadina */
+      --color-primary-task: #34495e; /* Tamno plava za tekst (Text) */
+      --color-card-bg: #ffffff; /* Pozadina kartice/ploče */
+      --color-accent: #4fc3f7; /* Plava/Accent za marker/aktivnost */
+      --color-success-ok: #81c784; /* Mirna zelena (Success/OK) */
+      --color-error-fail: #f06292; /* Nežna roze/crvena (Error/Fail) */
+
+      --shadow-soft: 0 6px 15px rgba(0,0,0,0.08); /* Malo jača senka */
+      --border-radius-large: 20px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Dosis', sans-serif; /* PROMENJENO U DOSIS */
+      background-color: var(--color-bg-light);
+      color: var(--color-primary-task);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* Kontejner igre (Wrap) - Fiksiran dizajn kao na index.html */
+    .wrap {
+      width: 100%;
+      max-width: 1000px;
+      background-color: var(--color-card-bg);
+      border-radius: var(--border-radius-large);
+      box-shadow: 0 16px 40px rgba(20, 30, 60, 0.1); /* Jača senka za glavni kontejner */
+      padding: 25px; 
+    }
+
+    /* Header/Meta */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 25px; /* Povećan razmak */
+    }
+    .title {
+      font-size: clamp(1.8rem, 3vw, 2.5rem); /* Veći naslov za Dosis font */
+      font-weight: 700;
+      color: var(--color-primary-task);
+    }
+    .meta { 
+      display: flex; 
+      gap: 15px; 
+      align-items: center; 
+      color: #5b6b7a; 
+      font-weight: 600;
+      font-size: 1.2rem; /* Veći font */
+    }
+    .meta strong { color: var(--color-primary-task); font-weight: 800; } /* Dosis Heavy */
+
+    /* Ploča za igru (Board) */
+    .board {
+      border-radius: var(--border-radius-large);
+      padding: 20px; /* Povećan padding */
+      background: #fdfdfd; 
+      box-shadow: var(--shadow-soft);
+    }
+
+    /* SVG area (game) */
+    .svg-wrap {
+      width: 100%;
+      height: 450px; /* Optimalna visina */
+      border-radius: 18px;
+      overflow: hidden;
+      touch-action: none;
+      /* Pastelna pozadina sa blagim gradijentom */
+      background: linear-gradient(135deg, rgba(79, 195, 247, 0.05), rgba(129, 199, 132, 0.05));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    svg { width: 100%; height: 100%; display: block; }
+
+    /* Putanja */
+    .path-line {
+      fill: none;
+      stroke: var(--color-success-ok); 
+      stroke-width: 38; 
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.2s ease;
+      cursor: crosshair; /* Kursor koji je tražen ranije */
+    }
+    .path-line.active { stroke: var(--color-accent); } 
+    .path-line.error { stroke: var(--color-error-fail); } 
+
+    /* Marker i tačke */
+    #marker { 
+      fill: var(--color-accent); 
+      stroke: var(--color-card-bg); 
+      stroke-width: 4; 
+      r: 14; /* Malo veći marker */
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15)); 
+      transition: transform 0.1s linear;
+    }
+    .start-dot { fill: var(--color-accent); r: 10; }
+    .end-dot { fill: var(--color-error-fail); r: 10; }
+
+    /* Kontrole */
+    .controls { 
+      display: flex; 
+      gap: 15px; 
+      align-items: center; 
+      margin-top: 25px; 
+      flex-wrap: wrap; 
+    }
+    button {
+      background: var(--color-card-bg);
+      padding: 12px 20px; 
+      border-radius: 12px;
+      border: 2px solid rgba(52, 73, 94, 0.1); 
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 1.1rem; /* Veći font u dugmetu */
+      transition: all 0.2s;
+    }
+    button:hover { 
+      background: var(--color-bg-light); 
+      border-color: rgba(52, 73, 94, 0.2); 
+    }
+    button.primary { 
+      background: var(--color-accent); 
+      color: white; 
+      border: 2px solid var(--color-accent);
+    }
+    button.primary:hover { 
+      background: #3498db; 
+      border-color: #3498db;
+    }
+    .note { 
+      color: #516477; 
+      font-size: 1rem; 
+      margin-left: auto;
+      font-weight: 500;
+    }
+
+    /* Inline poruka */
+    .message {
+      margin-top: 20px;
+      min-height: 60px; /* Veća visina */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--color-card-bg);
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s ease, visibility 0.3s;
+    }
+    .message.show { visibility: visible; opacity: 1; }
+    .message.error { background: var(--color-error-fail); color: white; } 
+    .message.success { background: var(--color-success-ok); color: var(--color-primary-task); } 
+
+    /* Ekrani uspeha i finalni ekran */
+    .success-screen, .final-screen {
+      position: fixed; inset: 0; 
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.65); /* Tamnija, fokusirana pozadina */
+      z-index: 999; visibility: hidden; opacity: 0; transition: opacity 0.3s ease;
+    }
+    .final-screen { background: rgba(129, 199, 132, 0.98); z-index: 9999; } 
+    .success-screen.show, .final-screen.show { visibility: visible; opacity: 1; }
+    
+    .success-card, .final-card {
+      background: var(--color-card-bg); padding: 40px; border-radius: 25px; text-align: center;
+      box-shadow: 0 20px 50px rgba(10, 20, 40, 0.4);
+      width: 92%; max-width: 700px;
+    }
+    .success-card h1, .final-card h2 { 
+      margin: 0 0 12px; 
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800; /* Dosis Heavy */
+      color: var(--color-primary-task);
+    }
+    .success-card p, .final-card p { 
+      margin: 0 0 25px; 
+      color: #405063; 
+      font-size: 1.2rem;
+    }
+    .final-card button, .success-card button {
+        /* Prilagodi dugmad u karticama */
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        border-width: 3px;
+        font-weight: 800;
+    }
+
+    /* Media queries */
+    @media (max-width:720px){
+      .svg-wrap{ height:320px } 
+      .wrap{ padding: 15px }
+      .title { font-size: 1.6rem; }
+      .meta { font-size: 0.9rem; gap: 8px; }
+      .controls{ flex-direction: column; align-items: stretch; }
+      .note{ margin-left: 0; text-align: center; order: 3; }
+      button{ width: 100%; }
+      .success-card, .final-card { padding: 30px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" role="main">
+    <header>
+      <div class="title">Prati Putanju — Glatko & Raznoliko</div>
+      <div class="meta">
+        <div>Level: <strong id="levelLabel">1</strong></div>
+        <div>Pokušaji: <strong id="triesLabel">0</strong></div>
+      </div>
+    </header>
+
+    <div class="board">
+      <div class="svg-wrap" id="svgWrap" aria-label="Igra pratnje putanje">
+        <svg id="gameSVG" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+      <div class="controls">
+        <button id="btnRetry">Pokušaj ponovo</button>
+        <button id="btnNext" class="primary">Sledeći nivo</button>
+        <div class="note">Drži pritisak i prati putanju — radi na desktop i mobilnom</div>
+      </div>
+
+      <h2 id="messageBox" class="message" role="status" aria-live="polite"></h2>
+    </div>
+  </div>
+
+  <div id="successScreen" class="success-screen" aria-hidden="true">
+    <div class="success-card">
+      <h1>🎉 Bravo! Nivo završen</h1>
+      <p id="successText">Precizno praćenje putanje.</p>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:14px">
+        <button id="againBtn">Igraj isti nivo</button>
+        <button id="nextBtn" class="primary">Sledeći nivo</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="finalScreen" class="final-screen" aria-hidden="true">
+    <div class="final-card">
+      <h2>🥳 Bravo — prešli ste sve nivoje!</h2>
+      <p>Bravo, prešli ste sve nivoje. Igraj ponovo, vrati se na početak, pogledaj drugu igricu.</p>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:16px">
+        <button id="finalRestart">Igraj ponovo</button>
+        <button id="finalHome">Nazad na izbor igrica</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ===============================
+   Poboljšana igra — 8 različitih nivoa
+   - glatka interpolacija markera (lerp)
+   - cache uzoraka po path-u za brže closest point računanje
+   - 7-8 stilizovanih, različitih path-ova
+   - poruke i finalni ekran
+   =============================== */
+
+(function(){
+  // --- LEVELS: 8 varijacija (različiti oblici i težine)
+  const levels = [
+    // level 1 - jednostavno S
+    "M80 260 C 200 80, 380 80, 520 260 C 660 440, 760 440, 700 260",
+    // level 2 - valoviti
+    "M70 250 C 160 60, 300 60, 360 250 C 420 440, 560 440, 700 260",
+    // level 3 - petlja (malo zahtevnije)
+    "M60 260 C 180 40, 330 420, 520 240 C 620 160, 720 320, 760 260",
+    // level 4 - duži S sa zategnutim zavojem
+    "M90 260 C 260 40, 440 440, 680 260 C 600 120, 460 420, 300 250",
+    // level 5 - trougao-ish, oštriji uglovi
+    "M100 120 L 700 120 C 680 240, 600 260, 500 300 L 200 320 C 140 280, 120 200, 100 120",
+    // level 6 - baza sa kružnim petljama
+    "M120 260 C 200 60, 300 60, 380 260 C 460 460, 560 460, 640 260 C 720 60, 760 260, 640 360",
+    // level 7 - cik-cak, zahtevniji
+    "M80 260 C 150 80, 220 400, 310 260 C 380 140, 460 380, 540 260 C 620 140, 690 400, 740 260",
+    // level 8 - kompleksniji L+S+loop
+    "M70 250 C 190 30, 360 430, 500 240 C 580 160, 680 340, 760 260 C 700 200, 620 180, 560 260"
+  ];
+
+  // --- DOM ---
+  const svg = document.getElementById('gameSVG');
+  const svgWrap = document.getElementById('svgWrap');
+  const levelLabel = document.getElementById('levelLabel');
+  const triesLabel = document.getElementById('triesLabel');
+  const messageBox = document.getElementById('messageBox');
+  const btnRetry = document.getElementById('btnRetry');
+  const btnNext = document.getElementById('btnNext');
+  const successScreen = document.getElementById('successScreen');
+  const successText = document.getElementById('successText');
+  const againBtn = document.getElementById('againBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const finalScreen = document.getElementById('finalScreen');
+  const finalRestart = document.getElementById('finalRestart');
+  const finalHome = document.getElementById('finalHome');
+
+  // --- STATE ---
+  let currentLevel = 0;
+  let tries = 0;
+  let pathEl = null, pathLength = 0;
+  let marker = null, startDot = null, endDot = null;
+  let isTracing = false, pointerId = null;
+  let currentT = 0; // current length along path that we've reached
+  let targetPos = {x:0,y:0}; // where marker should ease towards
+  let markerPos = {x:0,y:0}; // actual displayed marker (lerped)
+  let pathSamples = []; // cached points {t, x, y}
+  let animationRunning = false;
+  let audioCtx = null;
+  const HIT_TOLERANCE = 36;     // tolerancija udaljenosti
+  const FORWARD_MIN_MOVE = 2;   // dopuštena mala unazad pomeranja
+  const COMPLETE_THRESHOLD = 0.92; // koliko puta dužine treba prijeći
+
+  // --- Utils ---
+  function createSVGEl(tag, attrs={}){
+    const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (let k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+
+  function showMessage(text, kind='error', time=900){
+    messageBox.textContent = text;
+    messageBox.className = 'message show ' + (kind === 'error' ? 'error' : 'success');
+    clearTimeout(messageBox._t);
+    messageBox._t = setTimeout(()=> { messageBox.className = 'message'; }, time);
+  }
+
+  function playTone(freq=300, dur=0.12, type='sine'){
+    try {
+      if (!audioCtx) return;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type; o.frequency.value = freq;
+      o.connect(g); g.connect(audioCtx.destination);
+      g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + 0.01);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+      o.stop(audioCtx.currentTime + dur + 0.02);
+    } catch(e){}
+  }
+
+  // --- SAMPLE PATH (cache) ---
+  function buildPathSamples(){
+    pathSamples = [];
+    pathLength = pathEl.getTotalLength();
+    // choose sample step: more samples for longer path but avoid too many
+    const step = Math.max(0.5, Math.min(6, pathLength / 900));
+    for (let t = 0; t <= pathLength; t += step) {
+      const p = pathEl.getPointAtLength(t);
+      pathSamples.push({ t, x: p.x, y: p.y });
+    }
+    // ensure end included
+    const pend = pathEl.getPointAtLength(pathLength);
+    if (pathSamples.length===0 || pathSamples[pathSamples.length-1].t < pathLength) {
+      pathSamples.push({ t: pathLength, x: pend.x, y: pend.y });
+    }
+  }
+
+  // fast closest using samples then small refine
+  function getClosestOnPath(ptSVG){
+    let bestIdx = 0;
+    let bestDistSq = Infinity;
+    // rough scan through samples (fast)
+    for (let i=0;i<pathSamples.length;i++){
+      const dx = pathSamples[i].x - ptSVG.x;
+      const dy = pathSamples[i].y - ptSVG.y;
+      const dsq = dx*dx + dy*dy;
+      if (dsq < bestDistSq){ bestDistSq = dsq; bestIdx = i; }
+    }
+    // refine around bestIdx with finer stepping
+    const refineStart = Math.max(0, pathSamples[bestIdx].t - 8);
+    const refineEnd = Math.min(pathLength, pathSamples[bestIdx].t + 8);
+    let bestT = pathSamples[bestIdx].t;
+    for (let t = refineStart; t <= refineEnd; t += 0.6) {
+      const p = pathEl.getPointAtLength(t);
+      const dx = p.x - ptSVG.x, dy = p.y - ptSVG.y;
+      const dsq = dx*dx + dy*dy;
+      if (dsq < bestDistSq) { bestDistSq = dsq; bestT = t; }
+    }
+    const pbest = pathEl.getPointAtLength(bestT);
+    return { t: bestT, dist: Math.sqrt(bestDistSq), x: pbest.x, y: pbest.y };
+  }
+
+  // convert screen coords to SVG coords
+  function screenToSVGPoint(clientX, clientY){
+    const pt = svg.createSVGPoint();
+    pt.x = clientX; pt.y = clientY;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return pt;
+    return pt.matrixTransform(ctm.inverse());
+  }
+
+  // --- LOAD LEVEL ---
+  function loadLevel(index){
+    if (index < 0) index = 0;
+    if (index >= levels.length) index = levels.length - 1;
+    currentLevel = index;
+    levelLabel.textContent = currentLevel + 1;
+    tries = 0; triesLabel.textContent = tries;
+
+    // clear svg
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    // create path
+    pathEl = createSVGEl('path', { d: levels[currentLevel], class: 'path-line', vectorEffect:'non-scaling-stroke' });
+    svg.appendChild(pathEl);
+
+    // create start/end dots and marker
+    startDot = createSVGEl('circle', { r:10, class:'start-dot' });
+    endDot = createSVGEl('circle', { r:10, class:'end-dot' });
+    marker = createSVGEl('circle', { id:'marker', r:12 });
+    svg.appendChild(startDot); svg.appendChild(endDot); svg.appendChild(marker);
+
+    // ensure measurement after render
+    requestAnimationFrame(()=> {
+      buildPathSamples();
+      // set start and end positions
+      const p0 = pathEl.getPointAtLength(0);
+      const pEnd = pathEl.getPointAtLength(pathLength);
+      startDot.setAttribute('cx', p0.x); startDot.setAttribute('cy', p0.y);
+      endDot.setAttribute('cx', pEnd.x); endDot.setAttribute('cy', pEnd.y);
+      marker.setAttribute('cx', p0.x); marker.setAttribute('cy', p0.y);
+      markerPos.x = p0.x; markerPos.y = p0.y;
+      targetPos.x = p0.x; targetPos.y = p0.y;
+      currentT = 0;
+      pathEl.classList.remove('error');
+    });
+  }
+
+  // --- Reset level (after slip) ---
+  function resetLevel(incrementTry=true){
+    if (incrementTry){ tries++; triesLabel.textContent = tries; }
+    const p0 = pathEl.getPointAtLength(0);
+    targetPos.x = p0.x; targetPos.y = p0.y;
+    // snap marker quickly
+    markerPos.x = p0.x; markerPos.y = p0.y;
+    marker.setAttribute('cx', markerPos.x); marker.setAttribute('cy', markerPos.y);
+    currentT = 0; isTracing = false; pointerId = null;
+    pathEl.classList.remove('error');
+  }
+
+  // --- Complete level ---
+  function completeLevel(){
+    // if last level
+    if (currentLevel >= levels.length - 1) {
+      // show final screen
+      document.getElementById('finalScreen').classList.add('show');
+      playTone(640, 0.34, 'sine');
+      return;
+    }
+    // show success overlay for this level
+    successText.textContent = "Uspešno si završio/la nivo " + (currentLevel+1);
+    successScreen.classList.add('show');
+    playTone(520, 0.28, 'sine');
+  }
+
+  // --- Pointer handlers ---
+  function onPointerDown(e){
+    // only primary
+    if (e.button !== undefined && e.button !== 0) return;
+    if (!audioCtx) {
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){}
+    }
+
+    const pt = screenToSVGPoint(e.clientX, e.clientY);
+    const closest = getClosestOnPath(pt);
+    const p0 = pathEl.getPointAtLength(0);
+    const dx = p0.x - pt.x, dy = p0.y - pt.y;
+    const startDist = Math.sqrt(dx*dx + dy*dy);
+
+    if (startDist <= HIT_TOLERANCE || (closest.t <= 12 && closest.dist <= HIT_TOLERANCE)) {
+      // start tracing
+      isTracing = true;
+      pointerId = e.pointerId;
+      currentT = closest.t;
+      // set target pos to actual closest point
+      targetPos.x = closest.x; targetPos.y = closest.y;
+      pathEl.classList.add('active');
+      showMessage("Prati putanju — drži prst/miš i pomeraj napred", 'success', 900);
+      try{ svg.setPointerCapture(pointerId); }catch(err){}
+      playTone(340, 0.06, 'triangle');
+      e.preventDefault();
+    } else {
+      playTone(180, 0.1, 'triangle');
+      showMessage("Počni od plavog kruga na početku!", 'error', 1100);
+    }
+  }
+
+  function onPointerMove(e){
+    if (!isTracing) return;
+    if (pointerId !== null && e.pointerId !== pointerId) return;
+
+    const pt = screenToSVGPoint(e.clientX, e.clientY);
+    const closest = getClosestOnPath(pt);
+
+    if (closest.dist > HIT_TOLERANCE + 8) {
+      // slip
+      pathEl.classList.add('error');
+      playTone(120, 0.18, 'triangle');
+      showMessage("Iskliznuo/la si sa putanje! Vrati se na početak.", 'error', 1100);
+      try{ svg.releasePointerCapture(pointerId); }catch(err){}
+      resetAfterSlip();
+      return;
+    }
+
+    // only progress forward with small forgiveness
+    if (closest.t >= currentT - FORWARD_MIN_MOVE) {
+      currentT = closest.t;
+      targetPos.x = closest.x; targetPos.y = closest.y;
+    } else {
+      // trying to go back too much -> warn (no immediate fail)
+      playTone(180, 0.03, 'sine');
+    }
+
+    // check completion
+    if (currentT >= pathLength * COMPLETE_THRESHOLD) {
+      isTracing = false;
+      try{ svg.releasePointerCapture(pointerId); }catch(err){}
+      pathEl.classList.remove('active');
+      completeLevel();
+    }
+
+    e.preventDefault();
+  }
+
+  function onPointerUp(e){
+    if (!isTracing) return;
+    if (pointerId !== null && e.pointerId !== pointerId) return;
+
+    // if lifted before finishing -> reset
+    if (currentT < pathLength * COMPLETE_THRESHOLD) {
+      playTone(140, 0.08, 'triangle');
+      showMessage("Podigao/la si prst pre završetka. Pokušaj ponovo.", 'error', 1000);
+      resetAfterSlip();
+    }
+    isTracing = false;
+    try{ svg.releasePointerCapture(e.pointerId); }catch(err){}
+    pathEl.classList.remove('active');
+  }
+
+  function resetAfterSlip(){
+    // delay to show message
+    setTimeout(()=> resetLevel(true), 220);
+  }
+
+  // --- Animation loop for smooth marker
+  function animateMarker(){
+    if (!marker) { animationRunning = false; return; }
+    animationRunning = true;
+    const ease = 0.18; // how fast marker follows (0..1) - tweak for "glatko"
+    function frame(){
+      // lerp markerPos -> targetPos
+      markerPos.x += (targetPos.x - markerPos.x) * ease;
+      markerPos.y += (targetPos.y - markerPos.y) * ease;
+      marker.setAttribute('cx', markerPos.x);
+      marker.setAttribute('cy', markerPos.y);
+      // continue
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // --- Buttons and overlays ---
+  btnRetry.addEventListener('click', ()=> { resetLevel(true); showMessage("Nivo resetovan — pokušaj ponovo!", 'success', 900); });
+  btnNext.addEventListener('click', ()=> { goToLevel(currentLevel + 1); });
+  againBtn.addEventListener('click', ()=> { successScreen.classList.remove('show'); resetLevel(false); });
+  nextBtn.addEventListener('click', ()=> { successScreen.classList.remove('show'); goToLevel(currentLevel + 1); });
+
+  // final screen buttons
+  finalRestart.addEventListener('click', ()=> { document.getElementById('finalScreen').classList.remove('show'); goToLevel(0); });
+  finalHome.addEventListener('click', ()=> { /* možeš ovde navesti drugu stranicu ili index */ window.location.href = 'index.html'; });
+
+  function goToLevel(idx){
+    if (idx >= levels.length) {
+      // all finished -> show final
+      document.getElementById('finalScreen').classList.add('show');
+      return;
+    }
+    loadLevel(idx);
+  }
+
+  // keyboard accessibility: start with space/enter -> simulate pointerdown at start
+  svg.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      const p0 = pathEl.getPointAtLength(0);
+      const fake = { clientX: p0.x, clientY: p0.y, button:0, pointerId: 'kb' };
+      onPointerDown(fake);
+    }
+  });
+
+  // --- init ---
+  function init(){
+    // attach listeners
+    svgWrap.addEventListener('pointerdown', onPointerDown);
+    svgWrap.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+
+    // start first level
+    loadLevel(0);
+    if (!animationRunning) animateMarker();
+    // expose quick controls for debug
+    window._prati = { goToLevel, loadLevel, resetLevel, levelsCount: levels.length };
+  }
+
+  init();
+
+})(); // end IIFE
+</script>
+</body>
+</html>

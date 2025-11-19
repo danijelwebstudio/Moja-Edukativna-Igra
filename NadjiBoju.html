@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nađi Boju - Fokus Igra</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS STILOVI --- */
+
+        /* Ažurirana Paleta Boja (Jasnije, Zasićenije Pastelve) */
+        :root {
+            --color-bg-light: #f0f8ff; /* Veoma svetlo plava, čista pozadina */
+            --color-primary-task: #34495e; /* Tamno plava za tekst */
+            --color-success-bg: #d4edc1; /* Svetlo zelena za uspeh panel */
+            --color-error-bg: #f8d7da;   /* Svetlo crvena za motivacionu poruku */
+            
+            /* Nove, jasnije boje za kružiće */
+            --color-orange: #ffb74d;   /* Narandžasta */
+            --color-yellow: #fff176;   /* Jasno žuta */
+            --color-green: #81c784;    /* Jako zelena */
+            --color-blue: #4fc3f7;     /* Skroz plava */
+            --color-purple: #9575cd;   /* Nešto tamnija ljubičasta */
+            --color-pink: #f06292;     /* Jača roze */
+
+            --shadow-soft: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --border-radius-large: 20px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--color-bg-light); 
+            color: var(--color-primary-task);
+            transition: background-color 0.5s ease;
+        }
+
+        /* Kontejner igre */
+        .game-container {
+            max-width: 1100px;
+            width: 100%;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        /* Kontejner zadatka (Fokusiran i veliki) */
+        .task-box {
+            background-color: #ffffff;
+            padding: 25px 50px;
+            margin-bottom: 30px;
+            border-radius: var(--border-radius-large);
+            box-shadow: var(--shadow-soft);
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            font-weight: 700;
+            color: var(--color-primary-task);
+            display: inline-block; /* Da se prilagodi sadržaju */
+        }
+        
+        /* Poruka za motivaciju (Netačan odgovor) */
+        #feedbackMessage {
+            min-height: 50px; /* Rezervisan prostor */
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-weight: 500;
+            color: #c0392b; /* Tamnija boja za motivaciju */
+            margin-top: -15px; /* Pomeri malo više gore */
+            margin-bottom: 25px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #feedbackMessage.visible {
+            opacity: 1;
+        }
+
+        /* Mreža sa kružićima */
+        .color-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px;
+        }
+
+        /* Stil za kružiće */
+        .color-circle {
+            width: clamp(90px, 16vw, 130px); /* Veliki, responzivni krug */
+            height: clamp(90px, 16vw, 130px);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: var(--shadow-soft);
+            /* Smanjenje animacija za fokus */
+            transition: transform 0.2s ease, opacity 0.5s ease, box-shadow 0.2s ease;
+            position: relative; /* Potrebno za 'pop' animaciju */
+        }
+
+        /* --- ANIMACIJE I FIDBEK --- */
+
+        /* 1. Hover/Fokus (Blago uvećanje) */
+        .color-circle:not(.hidden):hover {
+            transform: scale(1.03); 
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 2. Tačan odgovor (Nežan Pop & Fade-out) - Zamena za brkanje/treperenje */
+        .pop-fade-out-animation {
+            animation: popAndFade 0.5s forwards;
+            pointer-events: none; /* Onemogući dalje klikove odmah */
+        }
+
+        @keyframes popAndFade {
+            0% { 
+                transform: scale(1.05); /* Blagi pop */
+                opacity: 1;
+                box-shadow: 0 0 15px 5px var(--color-green); /* Svetleći signal uspeha */
+            }
+            100% { 
+                transform: scale(0.8); /* Nežan odlazak */
+                opacity: 0; 
+            }
+        }
+        
+        /* 3. Skrivanje elementa */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Stranica uspeha (popup) */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(212, 237, 193, 0.95); /* Svetlo zelena/uspešna pozadina */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .success-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .success-message {
+            font-size: clamp(3rem, 10vw, 6rem);
+            color: var(--color-primary-task);
+            animation: pulse 1s infinite alternate;
+        }
+        
+        .home-button {
+            margin-top: 30px;
+            padding: 15px 30px;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-soft);
+            transition: transform 0.3s ease;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="game-container">
+        
+        <div id="taskBox" class="task-box">
+            Zadatak: Pronađi sve <span id="targetColorName" style="color: red;">[Boja]</span> kružiće!
+        </div>
+        
+        <div id="feedbackMessage"></div>
+
+        <div id="colorGrid" class="color-grid">
+            </div>
+        
+    </main>
+
+    <div id="successOverlay" class="success-overlay">
+        <div class="success-message">🎉 Fantastično! Uspeli ste! 🥳</div>
+        <button class="home-button" onclick="window.location.href='index.html'">Nazad na izbor igara</button>
+        <button class="home-button" onclick="window.location.href='NadjiBoju.html'">Igraj ponovo↻</button>
+    </div>
+
+    <script>
+        // --- JAVASCRIPT LOGIKA ---
+
+        const newColors = [
+            { name: "NARANDŽASTI", code: "var(--color-orange)" },
+            { name: "ŽUTI", code: "var(--color-yellow)" },
+            { name: "ZELENI", code: "var(--color-green)" },
+            { name: "PLAVI", code: "var(--color-blue)" },
+            { name: "LJUBIČASTI", code: "var(--color-purple)" },
+            { name: "ROZE", code: "var(--color-pink)" },
+        ];
+
+        const motivationalMessages = [
+            "Nema veze! Idemo dalje, sigurno ćeš pogoditi!",
+            "Sve je u redu, pokušaj ponovo!",
+            "Tako je, fokusiraj se! Možeš ti to!",
+            "Nema predaje, idemo! Sledeći put će biti pravi!",
+            "To nije bio taj, ali je super što pokušavaš!",
+        ];
+
+        let targetColor = null;
+        let targetCount = 0;
+        let foundCount = 0;
+        const totalCircles = 16; // Smanjen broj kružića za bolji fokus (sa 20 na 16)
+
+        const colorGrid = document.getElementById('colorGrid');
+        const targetColorNameEl = document.getElementById('targetColorName');
+        const successOverlay = document.getElementById('successOverlay');
+        const feedbackMessageEl = document.getElementById('feedbackMessage');
+        
+        // Zvuk za tačan odgovor (Mora se zameniti sa pravim zvukom na serveru)
+        // Korišćenje Web Audio API-ja za jednostavan, kratak ton
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSuccessSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.type = 'sine'; // Prijatan, miran ton
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // Standardna A nota
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+            
+            // Lagani fade out da ne bude nagao
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+
+        // Funkcija za mešanje niza
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Inicijalizacija igre
+        function initGame() {
+            targetColor = newColors[Math.floor(Math.random() * newColors.length)];
+            
+            targetColorNameEl.textContent = targetColor.name;
+            // Korišćenje JavaScript-a za preuzimanje vrednosti CSS varijable
+            const targetColorValue = getComputedStyle(document.documentElement).getPropertyValue(targetColor.code.replace('var(', '').replace(')', ''));
+            targetColorNameEl.style.color = targetColorValue; 
+
+            colorGrid.innerHTML = '';
+            targetCount = 0;
+            foundCount = 0;
+            successOverlay.classList.remove('visible');
+            feedbackMessageEl.classList.remove('visible');
+
+            let circleData = [];
+            const numTargetCircles = Math.floor(Math.random() * (6 - 3 + 1)) + 3; // 3 do 6 ciljanih
+
+            for (let i = 0; i < totalCircles; i++) {
+                let color;
+                let isTarget = false;
+
+                if (i < numTargetCircles) {
+                    color = targetColor;
+                    isTarget = true;
+                    targetCount++;
+                } else {
+                    let nonTargetColors = newColors.filter(c => c.name !== targetColor.name);
+                    color = nonTargetColors[Math.floor(Math.random() * nonTargetColors.length)];
+                    isTarget = false;
+                }
+                
+                circleData.push({ color: color, isTarget: isTarget });
+            }
+
+            shuffleArray(circleData);
+
+            circleData.forEach((data, index) => {
+                const circle = document.createElement('div');
+                circle.classList.add('color-circle');
+                circle.dataset.index = index;
+                circle.style.backgroundColor = data.color.code;
+                circle.dataset.isTarget = data.isTarget;
+
+                circle.addEventListener('click', handleCircleClick);
+                colorGrid.appendChild(circle);
+            });
+        }
+
+        // Funkcija za obradu klika
+        function handleCircleClick(event) {
+            const circle = event.target;
+            const isTarget = circle.dataset.isTarget === 'true';
+
+            if (circle.classList.contains('pop-fade-out-animation') || circle.classList.contains('hidden')) {
+                return; 
+            }
+
+            // Ukloni prethodnu poruku
+            feedbackMessageEl.classList.remove('visible');
+
+            if (isTarget) {
+                // Tačan odgovor: Nežan Pop & Fade-out + Zvuk
+                foundCount++;
+                playSuccessSound();
+                circle.removeEventListener('click', handleCircleClick);
+                
+                // Pokreni animaciju
+                circle.classList.add('pop-fade-out-animation');
+
+                setTimeout(() => {
+                    // Potpuno uklanjanje elementa nakon animacije
+                    circle.remove(); 
+                    
+                    if (foundCount === targetCount) {
+                        setTimeout(showSuccessScreen, 500); 
+                    }
+                }, 500); // Vreme jednako trajanju animacije
+
+            } else {
+                // Pogrešan odgovor: SAMO vizuelni fidbek motivacionom porukom
+                const message = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
+                feedbackMessageEl.textContent = message;
+                feedbackMessageEl.classList.add('visible');
+                
+                // Opciono: Blagi, kratki vizuelni signal na samom kružiću (samo promena senke)
+                circle.style.boxShadow = `0 0 10px 3px var(--color-purple)`;
+                setTimeout(() => {
+                    circle.style.boxShadow = `var(--shadow-soft)`;
+                }, 300);
+            }
+        }
+        
+        // Prikaz ekrana uspeha
+        function showSuccessScreen() {
+            successOverlay.classList.add('visible');
+        }
+
+        // Pokreni igru pri učitavanju stranice
+        window.onload = initGame;
+        
+    </script>
+</body>
+</html>
