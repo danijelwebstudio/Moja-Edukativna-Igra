@@ -14,7 +14,7 @@
 
         body {
             font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
-            background: linear-gradient(135deg, #FFE5E5 0%, #FFF0E5 100%);
+            background: linear-gradient(135deg, #FFF9C4 0%, #FFF59D 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -32,29 +32,36 @@
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 4vmin;
             color: #FF6B6B;
-            margin: 15px 0;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+            margin: 1.5vmin 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
             user-select: none;
             pointer-events: none;
         }
 
         .container {
-            width: 90vw;
+            width: 95vw;
             max-width: 600px;
-            height: 90vw;
+            height: 95vw;
             max-height: 600px;
             position: relative;
             touch-action: none;
+        }
+
+        @media (min-width: 601px) {
+            .container {
+                width: 80vw;
+                height: 80vw;
+            }
         }
 
         svg {
             width: 100%;
             height: 100%;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border-radius: 3vmin;
+            box-shadow: 0 1.5vmin 6vmin rgba(0,0,0,0.2);
             touch-action: none;
             user-select: none;
             -webkit-user-select: none;
@@ -62,8 +69,8 @@
 
         .track {
             fill: none;
-            stroke: #E8E8E8;
-            stroke-width: 90;
+            stroke: #E0E0E0;
+            stroke-width: 80;
             stroke-linecap: round;
             stroke-linejoin: round;
             pointer-events: none;
@@ -72,7 +79,7 @@
         .fill {
             fill: none;
             stroke: #2196F3;
-            stroke-width: 90;
+            stroke-width: 80;
             stroke-linecap: round;
             stroke-linejoin: round;
             pointer-events: none;
@@ -80,7 +87,7 @@
 
         .arrow {
             fill: white;
-            opacity: 0.9;
+            opacity: 0.95;
             pointer-events: none;
         }
 
@@ -103,13 +110,14 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #FFE5E5 0%, #FFF0E5 100%);
+            background: linear-gradient(135deg, #FFF9C4 0%, #FFF59D 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
             z-index: 1000;
             touch-action: none;
+            padding: 2vmin;
         }
 
         .menu-screen.hidden {
@@ -117,44 +125,68 @@
         }
 
         .menu-title {
-            font-size: 3.5rem;
+            font-size: 6vmin;
             color: #FF6B6B;
-            margin-bottom: 50px;
-            text-shadow: 4px 4px 8px rgba(0,0,0,0.2);
+            margin-bottom: 5vmin;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
             user-select: none;
             pointer-events: none;
+            text-align: center;
         }
 
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            max-width: 800px;
-            padding: 0 20px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 2vmin;
+            max-width: 900px;
+            width: 100%;
+            padding: 0 2vmin;
+        }
+
+        @media (max-width: 600px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+                gap: 2vmin;
+            }
+            
+            .menu-title {
+                font-size: 8vmin;
+                margin-bottom: 6vmin;
+            }
         }
 
         .menu-btn {
-            padding: 30px 40px;
-            font-size: 2rem;
+            padding: 4vmin 5vmin;
+            font-size: 3.5vmin;
             font-weight: bold;
             background: white;
             color: #FF6B6B;
-            border: 4px solid #FF6B6B;
-            border-radius: 20px;
+            border: 3px solid #FF6B6B;
+            border-radius: 3vmin;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 1.5vmin 3vmin rgba(0,0,0,0.15);
             transition: transform 0.2s, box-shadow 0.2s;
             user-select: none;
             touch-action: manipulation;
+            min-height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
         }
 
         .menu-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+            transform: translateY(-0.5vmin);
+            box-shadow: 0 2vmin 4vmin rgba(0,0,0,0.25);
         }
 
         .menu-btn:active {
             transform: scale(0.95);
+        }
+
+        .link-btn {
+            text-decoration: none;
         }
 
         .success-overlay {
@@ -170,6 +202,7 @@
             flex-direction: column;
             z-index: 1000;
             touch-action: none;
+            padding: 2vmin;
         }
 
         .success-overlay.show {
@@ -183,18 +216,18 @@
         }
 
         .success-emoji {
-            font-size: 140px;
+            font-size: 20vmin;
             animation: bounce 0.6s ease-in-out;
             user-select: none;
             pointer-events: none;
         }
 
         .success-word {
-            font-size: 4.5rem;
+            font-size: 8vmin;
             color: white;
             font-weight: bold;
-            text-shadow: 4px 4px 8px rgba(0,0,0,0.3);
-            margin-top: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            margin-top: 3vmin;
             user-select: none;
             pointer-events: none;
         }
@@ -206,36 +239,60 @@
 
         .success-buttons {
             display: flex;
-            gap: 30px;
-            margin-top: 50px;
+            gap: 3vmin;
+            margin-top: 6vmin;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .success-btn {
-            padding: 20px 50px;
-            font-size: 2rem;
+            padding: 3vmin 6vmin;
+            font-size: 3.5vmin;
             font-weight: bold;
             background: white;
             color: #4CAF50;
             border: none;
-            border-radius: 50px;
+            border-radius: 8vmin;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 1.5vmin 3vmin rgba(0,0,0,0.3);
             transition: transform 0.2s;
             user-select: none;
             touch-action: manipulation;
+            min-height: 60px;
         }
 
         .success-btn:active {
             transform: scale(0.95);
         }
 
+        @media (max-width: 600px) {
+            .success-emoji {
+                font-size: 25vmin;
+            }
+            
+            .success-word {
+                font-size: 10vmin;
+            }
+            
+            .success-btn {
+                font-size: 4vmin;
+                padding: 3.5vmin 7vmin;
+            }
+        }
+
         .progress {
-            font-size: 1.8rem;
+            font-size: 3.5vmin;
             color: #FF6B6B;
-            margin-top: 15px;
+            margin-top: 2vmin;
             font-weight: bold;
             user-select: none;
             pointer-events: none;
+        }
+
+        @media (max-width: 600px) {
+            .progress {
+                font-size: 4.5vmin;
+            }
         }
 
         .game-screen {
@@ -268,10 +325,7 @@
             <button class="menu-btn" onclick="startLesson(2)">👁️ OKO</button>
             <button class="menu-btn" onclick="startLesson(3)">👵 BABA</button>
             <button class="menu-btn" onclick="startLesson(4)">🐕 PAS</button>
-            <a href="index.html" class="menu-btn">
-                <span class="icon">🎮</span>
-                <span class="button-text">Igraj drugu igru</span>
-            </a>
+            <a href="index.html" class="menu-btn link-btn">🔙 NAZAD NA IGRE</a>
         </div>
     </div>
 
@@ -331,8 +385,8 @@
             B: {
                 strokes: [
                     { path: 'M 200 150 L 200 450', arrows: [{x: 200, y: 280, angle: 90}] },
-                    { path: 'M 200 150 Q 380 150 380 230 Q 380 280 200 280', arrows: [{x: 290, y: 180, angle: 0}] },
-                    { path: 'M 200 280 Q 400 280 400 365 Q 400 450 200 450', arrows: [{x: 300, y: 340, angle: 0}] }
+                    { path: 'M 200 150 Q 370 150 370 225 Q 370 280 200 280', arrows: [{x: 285, y: 180, angle: 0}] },
+                    { path: 'M 200 280 Q 390 280 390 365 Q 390 450 200 450', arrows: [{x: 295, y: 340, angle: 0}] }
                 ]
             },
             P: {
@@ -503,7 +557,7 @@
                     const cpX = coords[0], cpY = coords[1];
                     const endX = coords[2], endY = coords[3];
                     
-                    for (let t = 0; t <= 1; t += 0.012) {
+                    for (let t = 0; t <= 1; t += 0.008) {
                         const x = (1-t)*(1-t)*lastX + 2*(1-t)*t*cpX + t*t*endX;
                         const y = (1-t)*(1-t)*lastY + 2*(1-t)*t*cpY + t*t*endY;
                         points.push({x, y});
@@ -534,8 +588,8 @@
                 return;
             }
             
-            const numPoints = Math.floor(currentProgress * currentStrokeData.length);
-            const points = currentStrokeData.slice(0, numPoints);
+            const numPoints = Math.floor(currentProgress * (currentStrokeData.length - 1));
+            const points = currentStrokeData.slice(0, Math.max(1, numPoints + 1));
             
             if (points.length === 0) {
                 pathElement.setAttribute('d', '');
@@ -550,28 +604,21 @@
             pathElement.setAttribute('d', pathD);
         }
 
-        function findClosestPoint(x, y) {
-            const currentIdx = Math.floor(currentProgress * currentStrokeData.length);
-            const searchStart = Math.max(0, currentIdx - 15);
-            const searchEnd = Math.min(currentStrokeData.length, currentIdx + 180);
+        function projectPointOnPath(x, y) {
+            let minDist = Infinity;
+            let closestIndex = 0;
             
-            let bestIndex = currentIdx;
-            let bestScore = Infinity;
-            
-            for (let i = searchStart; i < searchEnd; i++) {
+            for (let i = 0; i < currentStrokeData.length; i++) {
                 const point = currentStrokeData[i];
                 const dist = Math.hypot(point.x - x, point.y - y);
                 
-                const forwardBonus = (i > currentIdx) ? -80 : 20;
-                const score = dist + forwardBonus;
-                
-                if (score < bestScore) {
-                    bestScore = dist;
-                    bestIndex = i;
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestIndex = i;
                 }
             }
             
-            return { index: bestIndex, distance: bestScore };
+            return { index: closestIndex, distance: minDist };
         }
 
         function handlePointerDown(e) {
@@ -611,12 +658,12 @@
             const x = (clientX - rect.left) * scaleX;
             const y = (clientY - rect.top) * scaleY;
             
-            const result = findClosestPoint(x, y);
+            const result = projectPointOnPath(x, y);
             
-            if (result.distance < 250) {
-                const newProgress = (result.index + 1) / currentStrokeData.length;
+            if (result.distance < 140) {
+                const newProgress = result.index / (currentStrokeData.length - 1);
                 
-                if (newProgress > currentProgress) {
+                if (newProgress >= currentProgress) {
                     currentProgress = newProgress;
                     updateFillPath();
                     
@@ -634,7 +681,7 @@
             
             isDragging = false;
             
-            if (currentProgress >= 0.80) {
+            if (currentProgress >= 0.98) {
                 completeStroke();
             }
         }
