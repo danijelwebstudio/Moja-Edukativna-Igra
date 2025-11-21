@@ -1,445 +1,706 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="sr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Uči Ćirilicu — Prati potez prsta</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#f7fbff; --card:#fff; --accent:#45b8ff; --accent2:#7ee0a8; --muted:#6b7a88;
-    --ok:#8bd08a; --err:#ff7b8b; --radius:16px; --shadow: 0 14px 40px rgba(20,30,60,0.08);
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0; font-family:Inter,system-ui,Arial; background:linear-gradient(180deg,#eaf9ff 0%,#fbfdff 100%);
-    display:flex; align-items:center; justify-content:center; padding:18px; color:#123;
-  }
-  .wrap{
-    width:100%; max-width:980px; background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow);
-    padding:18px;
-  }
-  header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-  .title{font-weight:800;font-size:20px;color:#0b3b57}
-  .meta{color:var(--muted);font-weight:700}
-  .board{background:linear-gradient(180deg,#ffffff,#f8ffff); padding:16px;border-radius:14px}
-  .gentle-msg{
-    min-height:52px;display:flex;align-items:center;justify-content:center;border-radius:12px;margin:8px 0 14px;padding:10px 14px;
-    font-weight:700;font-size:15px;background:linear-gradient(90deg, rgba(69,184,255,0.08), rgba(126,224,168,0.04));color:#063;
-    visibility:hidden;opacity:0;transform:translateY(6px);transition:opacity .18s,transform .18s,visibility .18s
-  }
-  .gentle-msg.show{visibility:visible;opacity:1;transform:translateY(0)}
-  .svg-wrap{width:100%;height:420px;border-radius:12px;overflow:hidden;touch-action:none;background:linear-gradient(180deg,rgba(96,197,255,0.03),rgba(139,208,138,0.02));display:flex;align-items:center;justify-content:center}
-  svg{width:100%;height:100%;display:block}
-  .stroke{fill:none; stroke:#dfeef6; stroke-width:36; stroke-linecap:round; stroke-linejoin:round; transition:stroke .14s, opacity .14s}
-  .stroke.active{ stroke: var(--accent); opacity:1 }
-  .stroke.error{ stroke: var(--err); opacity:0.95 }
-  .stroke.complete{ stroke: var(--ok); opacity:0.95 }
-  #marker{ fill:var(--accent); stroke:white; stroke-width:4; filter:drop-shadow(0 10px 24px rgba(0,0,0,0.12))}
-  .start-ring{ fill:none; stroke:rgba(255,255,255,0.9); stroke-width:6; filter:drop-shadow(0 6px 12px rgba(0,0,0,0.06)); }
-  .start-dot{ fill:var(--accent); stroke:white; stroke-width:3 }
-  .controls{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
-  button{padding:10px 14px;border-radius:12px;border:1px solid rgba(30,40,60,0.06);background:var(--card);cursor:pointer;font-weight:800}
-  button.primary{background:var(--accent);color:white;border:none;box-shadow:0 10px 24px rgba(69,184,255,0.12)}
-  .note{margin-left:auto;color:var(--muted);font-size:13px}
-  .word-image{width:84px;height:84px;border-radius:12px;background:linear-gradient(180deg,#fff,#f2fbff);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 28px rgba(0,0,0,0.06);margin-right:12px}
-  .word-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-  .target-word{font-size:20px;font-weight:800;color:#034}
-  @media (max-width:720px){ .svg-wrap{height:360px} .title{font-size:18px} .word-image{width:68px;height:68px} }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Učim Reči - Latinica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+            background: linear-gradient(135deg, #FFE5E5 0%, #FFF0E5 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #FF6B6B;
+            margin: 15px 0;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 90vw;
+            max-width: 600px;
+            height: 90vw;
+            max-height: 600px;
+            position: relative;
+            touch-action: none;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .track {
+            fill: none;
+            stroke: #E8E8E8;
+            stroke-width: 90;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            pointer-events: none;
+        }
+
+        .fill {
+            fill: none;
+            stroke: #2196F3;
+            stroke-width: 90;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            pointer-events: none;
+        }
+
+        .arrow {
+            fill: white;
+            opacity: 0.9;
+            pointer-events: none;
+        }
+
+        .marker {
+            fill: #2196F3;
+            filter: drop-shadow(0 4px 8px rgba(33, 150, 243, 0.4));
+            pointer-events: none;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            pointer-events: none;
+        }
+
+        .menu-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FFE5E5 0%, #FFF0E5 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1000;
+            touch-action: none;
+        }
+
+        .menu-screen.hidden {
+            display: none;
+        }
+
+        .menu-title {
+            font-size: 3.5rem;
+            color: #FF6B6B;
+            margin-bottom: 50px;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.2);
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+
+        .menu-btn {
+            padding: 30px 40px;
+            font-size: 2rem;
+            font-weight: bold;
+            background: white;
+            color: #FF6B6B;
+            border: 4px solid #FF6B6B;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transition: transform 0.2s, box-shadow 0.2s;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+        }
+
+        .menu-btn:active {
+            transform: scale(0.95);
+        }
+
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1000;
+            touch-action: none;
+        }
+
+        .success-overlay.show {
+            display: flex;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .success-emoji {
+            font-size: 140px;
+            animation: bounce 0.6s ease-in-out;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .success-word {
+            font-size: 4.5rem;
+            color: white;
+            font-weight: bold;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.3);
+            margin-top: 20px;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .success-buttons {
+            display: flex;
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .success-btn {
+            padding: 20px 50px;
+            font-size: 2rem;
+            font-weight: bold;
+            background: white;
+            color: #4CAF50;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .success-btn:active {
+            transform: scale(0.95);
+        }
+
+        .progress {
+            font-size: 1.8rem;
+            color: #FF6B6B;
+            margin-top: 15px;
+            font-weight: bold;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .game-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .game-screen.hidden {
+            display: none;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap" role="main">
-    <header>
-      <div class="title">Uči Ćirilicu — Prati potez prsta</div>
-      <div class="meta">Nivo: <strong id="levelLabel">1</strong> &nbsp; • &nbsp; Pokušaji: <strong id="triesLabel">0</strong></div>
-    </header>
-
-    <div class="board">
-      <div class="word-row" aria-hidden="false">
-        <div class="word-image" id="wordImage" aria-hidden="true">
-          <div style="font-size:36px">🏠</div>
+    <div class="menu-screen" id="menuScreen">
+        <div class="menu-title">Izaberi Reč 📚</div>
+        <div class="menu-grid">
+            <button class="menu-btn" onclick="startLesson(0)">👩 MAMA</button>
+            <button class="menu-btn" onclick="startLesson(1)">👨 TATA</button>
+            <button class="menu-btn" onclick="startLesson(2)">👁️ OKO</button>
+            <button class="menu-btn" onclick="startLesson(3)">👵 BABA</button>
+            <button class="menu-btn" onclick="startLesson(4)">🐕 PAS</button>
+            <a href="index.html" class="menu-btn">
+                <span class="icon">🎮</span>
+                <span class="button-text">Igraj drugu igru</span>
+            </a>
         </div>
-        <div>
-          <div class="target-word" id="targetWord">А</div>
-          <div style="color:var(--muted);font-size:14px" id="hintText">Potezi: 1</div>
-        </div>
-      </div>
-
-      <div id="gentleMsg" class="gentle-msg" aria-live="polite"></div>
-
-      <div class="svg-wrap" id="svgWrap" aria-label="Prati potez">
-        <svg id="gameSVG" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet">
-          <!-- defs: arrow marker -->
-          <defs>
-            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#fff" opacity="0.95"/>
-            </marker>
-            <marker id="arrowAccent" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#045" opacity="0.9"/>
-            </marker>
-          </defs>
-        </svg>
-      </div>
-
-      <div class="controls">
-        <button id="btnRetry">Pokušaj ponovo</button>
-        <button id="btnNext" class="primary" style="display:none">Sledeći</button>
-        <div style="flex:1"></div>
-        <div class="note">Dodirni i povuci — najbolje na telefonu</div>
-      </div>
     </div>
-  </div>
 
-<script>
-/* Poboljšana verzija trace-the-letter (više tolerancije, start rings, arrows on strokes,
-   marker always snaps to correct start, mobile-first) */
+    <div class="game-screen hidden" id="gameScreen">
+        <h1 id="letterTitle">Lekcija: MAMA</h1>
+        <div class="container">
+            <svg id="canvas" viewBox="0 0 600 600"></svg>
+        </div>
+        <div class="progress" id="progress">Slovo: M</div>
+    </div>
 
-(function(){
-  // ==== levels: prilagođeno za bolju vizuelnu formu U i Ć (Ć kao C sa kvačicom)
-  const levels = [
-    { label: 'А', strokes: [
-      "M200 380 L320 120",
-      "M320 120 L440 380",
-      "M255 250 L405 250"
-    ], hint:"Пишемо А: лева коса, десна коса, пруга" },
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-emoji" id="successEmoji">👩</div>
+        <div class="success-word" id="successWord">MAMA</div>
+        <div class="success-buttons">
+            <button class="success-btn" onclick="backToMenu()">🏠 NAZAD</button>
+            <button class="success-btn" onclick="nextLesson()">➡ DALJE</button>
+        </div>
+    </div>
 
-    { label: 'Н', strokes: [
-      "M200 120 L200 380",
-      "M200 120 L440 380",
-      "M440 120 L440 380"
-    ], hint:"Пишемо Н: лева, коса, десна" },
+    <script>
+        const letterPaths = {
+            M: {
+                strokes: [
+                    { path: 'M 150 450 L 150 150', arrows: [{x: 150, y: 280, angle: -90}] },
+                    { path: 'M 150 150 L 300 350', arrows: [{x: 215, y: 235, angle: 50}] },
+                    { path: 'M 300 350 L 450 150', arrows: [{x: 385, y: 235, angle: -50}] },
+                    { path: 'M 450 150 L 450 450', arrows: [{x: 450, y: 280, angle: 90}] }
+                ]
+            },
+            A: {
+                strokes: [
+                    { path: 'M 200 450 L 300 150', arrows: [{x: 245, y: 280, angle: -65}] },
+                    { path: 'M 300 150 L 400 450', arrows: [{x: 355, y: 280, angle: 65}] },
+                    { path: 'M 240 320 L 360 320', arrows: [{x: 300, y: 320, angle: 0}] }
+                ]
+            },
+            T: {
+                strokes: [
+                    { path: 'M 200 150 L 400 150', arrows: [{x: 300, y: 150, angle: 0}] },
+                    { path: 'M 300 150 L 300 450', arrows: [{x: 300, y: 280, angle: 90}] }
+                ]
+            },
+            O: {
+                strokes: [
+                    { path: 'M 300 150 Q 450 150 450 300 Q 450 450 300 450 Q 150 450 150 300 Q 150 150 300 150', 
+                      arrows: [{x: 380, y: 180, angle: 0}, {x: 380, y: 420, angle: 180}, {x: 220, y: 420, angle: 180}] }
+                ]
+            },
+            K: {
+                strokes: [
+                    { path: 'M 200 150 L 200 450', arrows: [{x: 200, y: 280, angle: 90}] },
+                    { path: 'M 450 150 L 200 300', arrows: [{x: 320, y: 220, angle: -135}] },
+                    { path: 'M 200 300 L 450 450', arrows: [{x: 320, y: 380, angle: 45}] }
+                ]
+            },
+            B: {
+                strokes: [
+                    { path: 'M 200 150 L 200 450', arrows: [{x: 200, y: 280, angle: 90}] },
+                    { path: 'M 200 150 Q 380 150 380 230 Q 380 280 200 280', arrows: [{x: 290, y: 180, angle: 0}] },
+                    { path: 'M 200 280 Q 400 280 400 365 Q 400 450 200 450', arrows: [{x: 300, y: 340, angle: 0}] }
+                ]
+            },
+            P: {
+                strokes: [
+                    { path: 'M 200 450 L 200 150', arrows: [{x: 200, y: 280, angle: -90}] },
+                    { path: 'M 200 150 Q 400 150 400 250 Q 400 320 200 320', arrows: [{x: 300, y: 190, angle: 0}] }
+                ]
+            },
+            S: {
+                strokes: [
+                    { path: 'M 400 200 Q 350 150 250 180 Q 200 200 200 240 Q 200 280 300 300 Q 400 320 400 380 Q 400 420 350 445 Q 300 460 200 420', 
+                      arrows: [{x: 320, y: 170, angle: 180}, {x: 350, y: 300, angle: 0}, {x: 280, y: 430, angle: 180}] }
+                ]
+            }
+        };
 
-    { label: 'У', strokes: [
-      // oblik U sa repom (V i noga) - preciznije raspoređeno
-      "M220 120 L360 300 L500 120",
-      "M360 300 L360 380"
-    ], hint:"Пишемо У: V облик па нога" },
+        const lessons = [
+            { name: 'MAMA', emoji: '👩', newLetters: ['M', 'A'], word: ['M', 'A', 'M', 'A'] },
+            { name: 'TATA', emoji: '👨', newLetters: ['T'], word: ['T', 'A', 'T', 'A'] },
+            { name: 'OKO', emoji: '👁️', newLetters: ['O', 'K'], word: ['O', 'K', 'O'] },
+            { name: 'BABA', emoji: '👵', newLetters: ['B'], word: ['B', 'A', 'B', 'A'] },
+            { name: 'PAS', emoji: '🐕', newLetters: ['P', 'S'], word: ['P', 'A', 'S'] }
+        ];
 
-    { label: 'Ћ', strokes: [
-      // pojednostavljeni Ć: like C + small hook + accent tick
-      "M220 140 C380 120, 420 340, 300 340", // glavni oblak
-      "M300 340 L300 380", // noga
-      "M245 110 L265 95"   // kvačica/akcent (mali potez gore)
-    ], hint:"Пишемо Ћ: полукруг, нога, мали акценат" },
+        let currentLessonIndex = 0;
+        let currentPhase = 'letter';
+        let currentLetterIndex = 0;
+        let currentWordLetterIndex = 0;
+        let currentStrokeIndex = 0;
+        let isDragging = false;
+        let currentProgress = 0;
+        let completedStrokes = [];
 
-    // reč пример (primer) - primer kako rade složene reči
-    { label: 'КУЋА', strokes: [
-      "M80 120 L80 380", "M80 120 L220 250 L80 380", // К
-      "M260 120 L360 320 L460 120", "M360 320 L360 380", // У
-      "M520 120 L640 120 C640 120, 640 320, 520 320", "M520 320 L520 380", // Ћ (prilagodjeno)
-      "M700 380 L780 120", "M780 120 L860 380", "M730 250 L840 250" // А
-    ], hint:"Пиши реч: кућа - пратећи слова", imagePlaceholder:"🏠" }
-  ];
+        const svg = document.getElementById('canvas');
+        const letterTitle = document.getElementById('letterTitle');
+        const progressText = document.getElementById('progress');
+        const successOverlay = document.getElementById('successOverlay');
+        const successEmoji = document.getElementById('successEmoji');
+        const successWord = document.getElementById('successWord');
+        const menuScreen = document.getElementById('menuScreen');
+        const gameScreen = document.getElementById('gameScreen');
 
-  // DOM refs
-  const svg = document.getElementById('gameSVG');
-  const svgWrap = document.getElementById('svgWrap');
-  const levelLabel = document.getElementById('levelLabel');
-  const triesLabel = document.getElementById('triesLabel');
-  const gentleMsg = document.getElementById('gentleMsg');
-  const targetWordEl = document.getElementById('targetWord');
-  const hintText = document.getElementById('hintText');
-  const wordImage = document.getElementById('wordImage');
-  const btnRetry = document.getElementById('btnRetry');
-  const btnNext = document.getElementById('btnNext');
+        let marker, pathElement, currentStrokeData;
 
-  // state
-  let levelIndex = 0, tries = 0;
-  let strokeEls = [], strokeSamples = [], pathLengths = [];
-  let strokeIndex = 0, marker = null, markerPos = {x:0,y:0}, targetPos = {x:0,y:0};
-  let isTracing = false, pointerId = null, currentT = 0;
-  let startDots = []; // svg groups for start markers
-  let slidOutWarn = false;
-  let animationRunning = false;
-
-  const HIT_TOL = 46;        // increased tolerance for users with motor challenges
-  const HARD_FAIL = 120;     // if very far, we give firmer feedback but not instant reset
-  const COMPLETE_PERC = 0.86; // percent to consider complete
-  const STROKE_SAMPLE_STEP = 6;
-
-  // helpers
-  function createSVG(tag, attrs={}){ const el = document.createElementNS("http://www.w3.org/2000/svg", tag); for (let k in attrs) el.setAttribute(k, attrs[k]); return el; }
-  function screenToSVGPoint(x,y){ const pt = svg.createSVGPoint(); pt.x = x; pt.y = y; const ctm = svg.getScreenCTM(); if(!ctm) return pt; return pt.matrixTransform(ctm.inverse()); }
-  function showGentle(text, time=900){ gentleMsg.textContent = text; gentleMsg.className = 'gentle-msg show'; clearTimeout(gentleMsg._t); gentleMsg._t = setTimeout(()=> gentleMsg.className = 'gentle-msg', time); }
-
-  // build level visuals
-  function renderLevel(idx){
-    // clear
-    while(svg.firstChild) svg.removeChild(svg.firstChild);
-    strokeEls = []; strokeSamples = []; pathLengths = []; startDots = [];
-    strokeIndex = 0; currentT = 0; slidOutWarn=false;
-
-    // recreate defs (arrow markers)
-    const defs = createSVG('defs', {});
-    defs.innerHTML = `
-      <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#fff" opacity="0.96"/>
-      </marker>
-      <marker id="arrowAccent" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#045" opacity="0.96"/>
-      </marker>
-    `;
-    svg.appendChild(defs);
-
-    const level = levels[idx];
-    levelLabel.textContent = idx+1;
-    targetWordEl.textContent = level.label;
-    hintText.textContent = level.hint || "";
-    triesLabel.textContent = tries;
-
-    if(level.imagePlaceholder){
-      wordImage.innerHTML = `<div style="font-size:36px">${level.imagePlaceholder}</div>`;
-    }
-
-    // add each stroke path
-    level.strokes.forEach((d,i)=>{
-      const p = createSVG('path',{d, class:'stroke', 'data-idx':i, vectorEffect:'non-scaling-stroke'});
-      // default arrow present but only visible on active via dynamic attribute
-      svg.appendChild(p);
-      strokeEls.push(p);
-    });
-
-    // marker circle
-    marker = createSVG('circle',{id:'marker', r:14});
-    svg.appendChild(marker);
-
-    // compute lengths & samples & start markers
-    requestAnimationFrame(()=> {
-      strokeEls.forEach((p,i)=>{
-        const L = p.getTotalLength();
-        pathLengths[i] = L;
-        const samples = [];
-        const step = Math.max(0.8, Math.min(STROKE_SAMPLE_STEP, Math.floor(L/80)));
-        for(let t=0;t<=L;t+=step){
-          const pt = p.getPointAtLength(t);
-          samples.push({t, x:pt.x, y:pt.y});
+        function startLesson(lessonIndex) {
+            currentLessonIndex = lessonIndex;
+            currentPhase = 'letter';
+            currentLetterIndex = 0;
+            currentWordLetterIndex = 0;
+            
+            menuScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            
+            const lesson = lessons[lessonIndex];
+            letterTitle.textContent = `Lekcija: ${lesson.name}`;
+            
+            loadNextLetterPhase();
         }
-        const pend = p.getPointAtLength(L);
-        if(samples.length===0 || samples[samples.length-1].t < L) samples.push({t:L,x:pend.x,y:pend.y});
-        strokeSamples[i] = samples;
 
-        // create start ring & dot for each stroke (but show only current prominently)
-        const s = p.getPointAtLength(0);
-        const g = createSVG('g', {'data-start-for':i});
-        const ring = createSVG('circle', {cx:s.x, cy:s.y, r:20, class:'start-ring', opacity: i===0 ? 1 : 0.18 });
-        const dot = createSVG('circle', {cx:s.x, cy:s.y, r:8, class:'start-dot', opacity: i===0 ? 1 : 0.9});
-        g.appendChild(ring); g.appendChild(dot);
-        svg.appendChild(g);
-        startDots.push({g, ring, dot});
-      });
+        function backToMenu() {
+            successOverlay.classList.remove('show');
+            gameScreen.classList.add('hidden');
+            menuScreen.classList.remove('hidden');
+        }
 
-      // place marker at start of first stroke
-      const s0 = strokeEls[0].getPointAtLength(0);
-      markerPos.x = s0.x; markerPos.y = s0.y;
-      marker.setAttribute('cx', markerPos.x); marker.setAttribute('cy', markerPos.y);
-      targetPos.x = markerPos.x; targetPos.y = markerPos.y;
-      updateStrokeVisuals();
-      if(!animationRunning) animateMarker();
-    });
-  }
+        function nextLesson() {
+            successOverlay.classList.remove('show');
+            
+            currentLessonIndex++;
+            if (currentLessonIndex >= lessons.length) {
+                currentLessonIndex = 0;
+            }
+            
+            startLesson(currentLessonIndex);
+        }
 
-  function updateStrokeVisuals(){
-    strokeEls.forEach((p,i)=>{
-      p.classList.remove('active','error','complete');
-      // remove marker-mid initially
-      p.removeAttribute('marker-mid');
-      p.style.opacity = 1;
-      if(i === strokeIndex){
-        p.classList.add('active');
-        // show arrows on active stroke
-        p.setAttribute('marker-mid', 'url(#arrow)');
-        // highlight start visual
-        startDots[i].ring.setAttribute('opacity', '1');
-        startDots[i].dot.setAttribute('opacity', '1');
-      } else if(i < strokeIndex){
-        p.classList.add('complete');
-        p.removeAttribute('marker-mid');
-        startDots[i].ring.setAttribute('opacity','0.12');
-        startDots[i].dot.setAttribute('opacity','0.9');
-      } else {
-        // future strokes subtle
-        p.style.opacity = 0.9;
-        startDots[i].ring.setAttribute('opacity','0.18');
-        startDots[i].dot.setAttribute('opacity','0.9');
-      }
-    });
-  }
+        function loadNextLetterPhase() {
+            const lesson = lessons[currentLessonIndex];
+            
+            if (currentLetterIndex >= lesson.newLetters.length) {
+                currentPhase = 'word';
+                currentWordLetterIndex = 0;
+                loadNextWordLetter();
+                return;
+            }
+            
+            const letter = lesson.newLetters[currentLetterIndex];
+            currentStrokeIndex = 0;
+            completedStrokes = [];
+            
+            progressText.textContent = `Slovo: ${letter}`;
+            loadStroke(letter);
+        }
 
-  // find closest point on stroke using samples + local refine
-  function closestOnStroke(idx, ptSVG){
-    const samples = strokeSamples[idx];
-    let bestIdx=0, best=Infinity;
-    for(let i=0;i<samples.length;i++){
-      const dx = samples[i].x - ptSVG.x;
-      const dy = samples[i].y - ptSVG.y;
-      const ds = dx*dx + dy*dy;
-      if(ds < best){ best = ds; bestIdx = i; }
-    }
-    const L = pathLengths[idx];
-    const refineStart = Math.max(0, samples[bestIdx].t - 20);
-    const refineEnd = Math.min(L, samples[bestIdx].t + 20);
-    let bestT = samples[bestIdx].t; let bestDs = best;
-    for(let t=refineStart; t<=refineEnd; t+=1.2){
-      const p = strokeEls[idx].getPointAtLength(t);
-      const dx = p.x - ptSVG.x, dy = p.y - ptSVG.y;
-      const ds = dx*dx + dy*dy;
-      if(ds < bestDs){ bestDs = ds; bestT = t; }
-    }
-    const pb = strokeEls[idx].getPointAtLength(bestT);
-    return { t: bestT, dist: Math.sqrt(bestDs), x: pb.x, y: pb.y };
-  }
+        function loadNextWordLetter() {
+            const lesson = lessons[currentLessonIndex];
+            
+            if (currentWordLetterIndex >= lesson.word.length) {
+                completeLesson();
+                return;
+            }
+            
+            const letter = lesson.word[currentWordLetterIndex];
+            currentStrokeIndex = 0;
+            completedStrokes = [];
+            
+            const wordProgress = lesson.word.slice(0, currentWordLetterIndex + 1).join('');
+            progressText.textContent = `Reč: ${wordProgress}`;
+            
+            loadStroke(letter);
+        }
 
-  // pointer handlers
-  function onPointerDown(e){
-    if(e.button !== undefined && e.button !== 0) return;
-    const pt = screenToSVGPoint(e.clientX, e.clientY);
-    const start = strokeEls[strokeIndex].getPointAtLength(0);
-    const dx = start.x - pt.x, dy = start.y - pt.y;
-    const startDist = Math.hypot(dx,dy);
-    const closest = closestOnStroke(strokeIndex, pt);
+        function loadStroke(letter) {
+            svg.innerHTML = '';
+            
+            const letterData = letterPaths[letter];
+            const stroke = letterData.strokes[currentStrokeIndex];
+            currentStrokeData = parsePathToPoints(stroke.path);
+            
+            completedStrokes.forEach(completedPath => {
+                const completed = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                completed.setAttribute('d', completedPath);
+                completed.setAttribute('class', 'fill');
+                svg.appendChild(completed);
+            });
+            
+            const track = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            track.setAttribute('d', stroke.path);
+            track.setAttribute('class', 'track');
+            svg.appendChild(track);
+            
+            stroke.arrows.forEach(arrow => {
+                const arrowGroup = createArrow(arrow.x, arrow.y, arrow.angle);
+                svg.appendChild(arrowGroup);
+            });
+            
+            pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            pathElement.setAttribute('class', 'fill');
+            pathElement.setAttribute('d', '');
+            svg.appendChild(pathElement);
+            
+            const startPoint = currentStrokeData[0];
+            marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            marker.setAttribute('class', 'marker');
+            marker.setAttribute('cx', startPoint.x);
+            marker.setAttribute('cy', startPoint.y);
+            marker.setAttribute('r', '50');
+            svg.appendChild(marker);
+            
+            currentProgress = 0;
+            updateFillPath();
+        }
 
-    // allow starting slightly along the stroke (first 18px) or near the start point
-    if(startDist <= HIT_TOL || (closest.t <= 18 && closest.dist <= HIT_TOL + 8)){
-      isTracing = true; pointerId = e.pointerId;
-      currentT = Math.max(0, Math.min(closest.t, pathLengths[strokeIndex]*0.12)); // small snap to start
-      targetPos.x = strokeEls[strokeIndex].getPointAtLength(currentT).x;
-      targetPos.y = strokeEls[strokeIndex].getPointAtLength(currentT).y;
-      strokeEls[strokeIndex].classList.remove('error'); strokeEls[strokeIndex].classList.add('active');
-      try{ svg.setPointerCapture(pointerId); }catch(err){}
-      showGentle('Прати стрелицу — полако и нежно',900);
-      e.preventDefault();
-    } else {
-      showGentle('Почни на пла̀вом месту (где стоји круг)',900);
-    }
-  }
+        function parsePathToPoints(pathString) {
+            const points = [];
+            const commands = pathString.match(/[MLQC][^MLQC]*/g);
+            let lastX = 0, lastY = 0;
+            
+            commands.forEach(cmd => {
+                const type = cmd[0];
+                const coords = cmd.slice(1).trim().split(/[\s,]+/).map(Number);
+                
+                if (type === 'M' || type === 'L') {
+                    points.push({x: coords[0], y: coords[1]});
+                    lastX = coords[0];
+                    lastY = coords[1];
+                } else if (type === 'Q') {
+                    const cpX = coords[0], cpY = coords[1];
+                    const endX = coords[2], endY = coords[3];
+                    
+                    for (let t = 0; t <= 1; t += 0.012) {
+                        const x = (1-t)*(1-t)*lastX + 2*(1-t)*t*cpX + t*t*endX;
+                        const y = (1-t)*(1-t)*lastY + 2*(1-t)*t*cpY + t*t*endY;
+                        points.push({x, y});
+                    }
+                    lastX = endX;
+                    lastY = endY;
+                }
+            });
+            
+            return points;
+        }
 
-  function onPointerMove(e){
-    if(!isTracing) return;
-    if(pointerId !== null && e.pointerId !== pointerId) return;
+        function createArrow(x, y, angle) {
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('transform', `translate(${x}, ${y}) rotate(${angle})`);
+            
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', 'M -20 -15 L 20 0 L -20 15 Z');
+            path.setAttribute('class', 'arrow');
+            g.appendChild(path);
+            
+            return g;
+        }
 
-    const pt = screenToSVGPoint(e.clientX, e.clientY);
-    const closest = closestOnStroke(strokeIndex, pt);
+        function updateFillPath() {
+            if (currentProgress <= 0) {
+                pathElement.setAttribute('d', '');
+                return;
+            }
+            
+            const numPoints = Math.floor(currentProgress * currentStrokeData.length);
+            const points = currentStrokeData.slice(0, numPoints);
+            
+            if (points.length === 0) {
+                pathElement.setAttribute('d', '');
+                return;
+            }
+            
+            let pathD = `M ${points[0].x} ${points[0].y}`;
+            for (let i = 1; i < points.length; i++) {
+                pathD += ` L ${points[i].x} ${points[i].y}`;
+            }
+            
+            pathElement.setAttribute('d', pathD);
+        }
 
-    // if quite far -> gentle nudge (don't hard reset); allow some recovery
-    if(closest.dist > HARD_FAIL){
-      // user is way off: give clearer hint and slowly slide marker back towards stroke start
-      strokeEls[strokeIndex].classList.add('error');
-      if(!slidOutWarn) showGentle('Скренуо/ла си далеко — врати се на плаву линију полако',1100);
-      slidOutWarn = true;
-      // nudge currentT slightly back so they re-do a bit
-      currentT = Math.max(0, currentT - 12);
-      const pback = strokeEls[strokeIndex].getPointAtLength(currentT);
-      targetPos.x = pback.x; targetPos.y = pback.y;
-      return;
-    }
+        function findClosestPoint(x, y) {
+            const currentIdx = Math.floor(currentProgress * currentStrokeData.length);
+            const searchStart = Math.max(0, currentIdx - 15);
+            const searchEnd = Math.min(currentStrokeData.length, currentIdx + 180);
+            
+            let bestIndex = currentIdx;
+            let bestScore = Infinity;
+            
+            for (let i = searchStart; i < searchEnd; i++) {
+                const point = currentStrokeData[i];
+                const dist = Math.hypot(point.x - x, point.y - y);
+                
+                const forwardBonus = (i > currentIdx) ? -80 : 20;
+                const score = dist + forwardBonus;
+                
+                if (score < bestScore) {
+                    bestScore = dist;
+                    bestIndex = i;
+                }
+            }
+            
+            return { index: bestIndex, distance: bestScore };
+        }
 
-    // normal: if within tolerance, allow progress; if slightly outside, allow but slower
-    if(closest.dist <= HIT_TOL + 8){
-      // allow forward progress (only small backward allowance)
-      if(closest.t >= currentT - 3){
-        currentT = closest.t;
-        targetPos.x = closest.x; targetPos.y = closest.y;
-      } else {
-        // small backward - do not penalize; give hint
-        targetPos.x = closest.x; targetPos.y = closest.y;
-      }
-      strokeEls[strokeIndex].classList.remove('error');
-      slidOutWarn = false;
-    } else {
-      // slight slip: mark subtle error and nudge back (no hard reset)
-      strokeEls[strokeIndex].classList.add('error');
-      if(!slidOutWarn) showGentle('Мало си скренуо/ла — врати се на црту',900);
-      slidOutWarn = true;
-      // gently pull marker to the nearest point on stroke
-      targetPos.x = closest.x; targetPos.y = closest.y;
-      // step back a bit in progress so they cover small part again
-      currentT = Math.max(0, closest.t - 8);
-    }
+        function handlePointerDown(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const rect = svg.getBoundingClientRect();
+            const scaleX = 600 / rect.width;
+            const scaleY = 600 / rect.height;
+            
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            const x = (clientX - rect.left) * scaleX;
+            const y = (clientY - rect.top) * scaleY;
+            
+            const startPoint = currentStrokeData[0];
+            const dist = Math.hypot(startPoint.x - x, startPoint.y - y);
+            
+            if (dist < 180) {
+                isDragging = true;
+            }
+        }
 
-    // check completion
-    if(currentT >= pathLengths[strokeIndex] * COMPLETE_PERC){
-      isTracing = false;
-      try{ svg.releasePointerCapture(pointerId); }catch(err){}
-      const pend = strokeEls[strokeIndex].getPointAtLength(pathLengths[strokeIndex]);
-      targetPos.x = pend.x; targetPos.y = pend.y;
-      // mark complete visually
-      strokeEls[strokeIndex].classList.remove('active'); strokeEls[strokeIndex].classList.add('complete');
-      // next stroke
-      strokeIndex++;
-      if(strokeIndex >= strokeEls.length){
-        levelComplete();
-      } else {
-        // update visuals for next stroke
-        setTimeout(()=>{ updateStrokeVisuals(); showGentle('Супер! Следећи потез',700); }, 220);
-      }
-    }
-    e.preventDefault();
-  }
+        function handlePointerMove(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const rect = svg.getBoundingClientRect();
+            const scaleX = 600 / rect.width;
+            const scaleY = 600 / rect.height;
+            
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            const x = (clientX - rect.left) * scaleX;
+            const y = (clientY - rect.top) * scaleY;
+            
+            const result = findClosestPoint(x, y);
+            
+            if (result.distance < 250) {
+                const newProgress = (result.index + 1) / currentStrokeData.length;
+                
+                if (newProgress > currentProgress) {
+                    currentProgress = newProgress;
+                    updateFillPath();
+                    
+                    const currentPoint = currentStrokeData[result.index];
+                    marker.setAttribute('cx', currentPoint.x);
+                    marker.setAttribute('cy', currentPoint.y);
+                }
+            }
+        }
 
-  function onPointerUp(e){
-    if(!isTracing) return;
-    if(pointerId !== null && e.pointerId !== pointerId) return;
-    // if lifted too early (didn't reach completion), give hint but do not hard reset
-    if(currentT < pathLengths[strokeIndex] * COMPLETE_PERC){
-      showGentle('Подигли сте прст пре краја — наставите од почетка овог потеза',1000);
-      // gently snap marker back to start for this stroke segment
-      const s = strokeEls[strokeIndex].getPointAtLength(0);
-      targetPos.x = s.x; targetPos.y = s.y;
-      currentT = 0;
-      tries++; triesLabel.textContent = tries;
-    }
-    isTracing = false;
-    try{ svg.releasePointerCapture(e.pointerId); }catch(err){}
-  }
+        function handlePointerUp(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            e.stopPropagation();
+            
+            isDragging = false;
+            
+            if (currentProgress >= 0.80) {
+                completeStroke();
+            }
+        }
 
-  function levelComplete(){
-    showGentle('Браво! Ниво завршен',1400);
-    btnNext.style.display = 'inline-block';
-    // small celebration: highlight all strokes as complete
-    strokeEls.forEach(p=> { p.classList.remove('active'); p.classList.add('complete'); p.removeAttribute('marker-mid'); });
-  }
+        function completeStroke() {
+            createConfetti(10);
+            
+            const lesson = lessons[currentLessonIndex];
+            const letter = currentPhase === 'letter' 
+                ? lesson.newLetters[currentLetterIndex]
+                : lesson.word[currentWordLetterIndex];
+            
+            const letterData = letterPaths[letter];
+            completedStrokes.push(letterData.strokes[currentStrokeIndex].path);
+            
+            currentStrokeIndex++;
+            
+            if (currentStrokeIndex >= letterData.strokes.length) {
+                if (currentPhase === 'letter') {
+                    currentLetterIndex++;
+                    setTimeout(() => loadNextLetterPhase(), 500);
+                } else {
+                    currentWordLetterIndex++;
+                    setTimeout(() => loadNextWordLetter(), 500);
+                }
+            } else {
+                setTimeout(() => loadStroke(letter), 300);
+            }
+        }
 
-  // animation
-  function animateMarker(){
-    if(!marker) { animationRunning=false; return; }
-    animationRunning = true;
-    const ease = 0.18;
-    (function frame(){
-      markerPos.x += (targetPos.x - markerPos.x) * ease;
-      markerPos.y += (targetPos.y - markerPos.y) * ease;
-      marker.setAttribute('cx', markerPos.x);
-      marker.setAttribute('cy', markerPos.y);
-      requestAnimationFrame(frame);
-    })();
-  }
+        function completeLesson() {
+            const lesson = lessons[currentLessonIndex];
+            successEmoji.textContent = lesson.emoji;
+            successWord.textContent = lesson.name;
+            
+            createConfetti(70);
+            successOverlay.classList.add('show');
+        }
 
-  // buttons
-  btnRetry.addEventListener('click', () => {
-    tries++; triesLabel.textContent = tries;
-    renderLevel(levelIndex);
-    btnNext.style.display='none';
-    showGentle('Ниво је ресетован',900);
-  });
-  btnNext.addEventListener('click', () => {
-    levelIndex++;
-    if(levelIndex >= levels.length) levelIndex = 0;
-    renderLevel(levelIndex);
-    btnNext.style.display='none';
-    showGentle('Нови ниво',700);
-  });
+        function createConfetti(count) {
+            for (let i = 0; i < count; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = Math.random() * 100 + '%';
+                confetti.style.background = ['#FF6B6B', '#4CAF50', '#2196F3', '#FFC107', '#9C27B0'][Math.floor(Math.random() * 5)];
+                confetti.style.animation = `confettiFall ${1 + Math.random()}s ease-out forwards`;
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 1500);
+            }
+        }
 
-  // pointer listeners on wrapper (better hit area on mobile)
-  svgWrap.addEventListener('pointerdown', onPointerDown);
-  svgWrap.addEventListener('pointermove', onPointerMove);
-  window.addEventListener('pointerup', onPointerUp);
+        svg.addEventListener('pointerdown', handlePointerDown);
+        svg.addEventListener('pointermove', handlePointerMove);
+        svg.addEventListener('pointerup', handlePointerUp);
+        svg.addEventListener('pointercancel', handlePointerUp);
+        svg.addEventListener('touchstart', handlePointerDown, { passive: false });
+        svg.addEventListener('touchmove', handlePointerMove, { passive: false });
+        svg.addEventListener('touchend', handlePointerUp, { passive: false });
+        svg.addEventListener('touchcancel', handlePointerUp, { passive: false });
+        svg.addEventListener('dragstart', e => e.preventDefault());
 
-  // init
-  function init(){ renderLevel(levelIndex); animateMarker(); }
-  init();
-
-})();
-</script>
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging) e.preventDefault();
+        }, { passive: false });
+    </script>
 </body>
 </html>
