@@ -16,14 +16,15 @@ body {
     font-family: 'Dosis', sans-serif; /* Prijateljski, dečiji font */
     margin: 0;
     padding: 0;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+
+    /* MINJAO SAM OVO ↓↓↓ */
+    min-height: auto; /* više ne zaključava visinu ekrana */
+    display: block;   /* uklanja flex koji centrira sve i sprečava skrol */
+    overflow: visible; /* uklanja blokadu skrolovanja */
+
     text-align: center;
     background: linear-gradient(135deg, var(--color-primary-start) 0%, var(--color-primary-end) 100%);
     color: var(--color-text);
-    overflow: hidden; /* Sprečava pojavu scrollbara zbog lebdećih elemenata */
 }
 
 /* Kontejner igre */
@@ -102,23 +103,6 @@ body {
     0% { transform: translateY(0px); }
     100% { transform: translateY(-15px); }
 }
-
-/* 2. Animacija za pozadinske oblike (nevidljivi elementi u body/main) */
-/* Primer: Dodajte elemente sa klasom .background-shape u HTML za ovo */
-/*
-.background-shape {
-    position: absolute;
-    opacity: 0.5;
-    background-color: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    animation: slow-float 20s infinite linear;
-}
-
-@keyframes slow-float {
-    0% { transform: translate(0, 0) rotate(0deg); }
-    100% { transform: translate(20px, -20px) rotate(360deg); }
-}
-*/
 
 /* Media Queries za manji ekran (npr. mobilni telefon) */
 @media (max-width: 600px) {
