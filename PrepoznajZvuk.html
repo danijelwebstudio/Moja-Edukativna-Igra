@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Prepoznaj Zvuk</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial', sans-serif;
+            background: #FFF9C4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+            touch-action: manipulation;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: #FF9800;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+
+        .level-indicator {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 40px;
+        }
+
+        .play-sound-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+            padding: 35px 70px;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 320px;
+            position: relative;
+        }
+
+        .play-sound-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .play-sound-btn:active {
+            transform: scale(0.95);
+        }
+
+        .play-sound-btn.playing {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .sound-indicator {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+
+        .sound-indicator.active {
+            opacity: 1;
+        }
+
+        .sound-indicator.error {
+            background: #f44336;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            width: 100%;
+            max-width: 950px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 25px;
+            padding: 45px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 220px;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .card:active {
+            transform: scale(0.98);
+        }
+
+        .card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .card-emoji {
+            font-size: 90px;
+            margin-bottom: 15px;
+        }
+
+        .card-label {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        .card.correct {
+            background: #4CAF50;
+            animation: correctAnimation 0.6s;
+        }
+
+        .card.correct .card-label {
+            color: white;
+        }
+
+        @keyframes correctAnimation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1.05); }
+        }
+
+        .card.incorrect {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-12px); }
+            40% { transform: translateX(12px); }
+            60% { transform: translateX(-12px); }
+            80% { transform: translateX(12px); }
+        }
+
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .success-overlay.active {
+            display: flex;
+        }
+
+        .success-content {
+            background: white;
+            border-radius: 30px;
+            padding: 60px;
+            text-align: center;
+            animation: popIn 0.5s;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0) rotate(-180deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .success-title {
+            font-size: 64px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 35px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .next-btn {
+            background: #4CAF50;
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            padding: 22px 55px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3);
+            transition: all 0.3s;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .next-btn:active {
+            transform: scale(0.95);
+        }
+
+        .confetti {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            background: #f0f;
+            animation: confetti-fall 3s linear;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .game-complete {
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: #4CAF50;
+            animation: popIn 0.8s;
+        }
+
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+
+            .card {
+                padding: 35px;
+                min-height: 200px;
+            }
+
+            .card-emoji {
+                font-size: 70px;
+            }
+
+            .card-label {
+                font-size: 18px;
+            }
+
+            .play-sound-btn {
+                font-size: 28px;
+                padding: 28px 50px;
+                min-width: 280px;
+            }
+
+            .success-content {
+                padding: 50px 35px;
+            }
+
+            .success-title {
+                font-size: 52px;
+            }
+
+            .next-btn {
+                font-size: 26px;
+                padding: 20px 45px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .play-sound-btn {
+                font-size: 24px;
+                padding: 25px 40px;
+                min-width: 240px;
+            }
+
+            .back-btn {
+                font-size: 16px;
+                padding: 10px 20px;
+            }
+
+            .level-indicator {
+                font-size: 16px;
+            }
+
+            .success-content {
+                padding: 40px 25px;
+            }
+
+            .success-title {
+                font-size: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="index.html" class="back-btn">🔙 NAZAD NA IGRE</a>
+        <div class="level-indicator" id="levelIndicator">Nivo 1 od 4</div>
+    </div>
+
+    <div class="game-container">
+        <button class="play-sound-btn" id="playSoundBtn">
+            🔊 PUSTI ZVUK
+            <div class="sound-indicator" id="soundIndicator">Svira...</div>
+        </button>
+
+        <div class="cards-grid" id="cardsGrid">
+            <!-- Cards will be generated here -->
+        </div>
+    </div>
+
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-content">
+            <div class="success-title">🎉 BRAVO! 🎉</div>
+            <button class="next-btn" id="nextBtn">DALJE ➡️</button>
+        </div>
+    </div>
+
+    <script>
+        const levels = [
+            {
+                target: 'pas',
+                options: [
+                    { id: 'pas', emoji: '🐶', label: 'PAS', sound: 'zvuk/pas.mp3' },
+                    { id: 'macka', emoji: '🐱', label: 'MAČKA', sound: 'zvuk/macka.mp3' },
+                    { id: 'ptica', emoji: '🐦', label: 'PTICA', sound: 'zvuk/ptica.mp3' }
+                ]
+            },
+            {
+                target: 'auto',
+                options: [
+                    { id: 'auto', emoji: '🚗', label: 'AUTO', sound: 'zvuk/auto.mp3' },
+                    { id: 'bicikl', emoji: '🚲', label: 'BICIKL', sound: 'zvuk/biciklo.mp3' },
+                    { id: 'motor', emoji: '🏍️', label: 'MOTOR', sound: 'zvuk/motor.mp3' }
+                ]
+            },
+            {
+                target: 'ovca',
+                options: [
+                    { id: 'ovca', emoji: '🐑', label: 'OVCA', sound: 'zvuk/ovca.mp3' },
+                    { id: 'krava', emoji: '🐮', label: 'KRAVA', sound: 'zvuk/krava.mp3' },
+                    { id: 'svinja', emoji: '🐷', label: 'SVINJA', sound: 'zvuk/svinja.mp3' }
+                ]
+            },
+            {
+                target: 'bubanj',
+                options: [
+                    { id: 'bubanj', emoji: '🥁', label: 'BUBANJ', sound: 'zvuk/bubanj.mp3' },
+                    { id: 'truba', emoji: '🎺', label: 'TRUBA', sound: 'zvuk/truba.mp3' },
+                    { id: 'gitara', emoji: '🎸', label: 'GITARA', sound: 'zvuk/gitara.mp3' }
+                ]
+            }
+        ];
+
+        let currentLevel = 0;
+        let canClick = false;
+        let currentAudio = null;
+
+        const playSoundBtn = document.getElementById('playSoundBtn');
+        const cardsGrid = document.getElementById('cardsGrid');
+        const successOverlay = document.getElementById('successOverlay');
+        const nextBtn = document.getElementById('nextBtn');
+        const levelIndicator = document.getElementById('levelIndicator');
+        const soundIndicator = document.getElementById('soundIndicator');
+
+        function stopCurrentAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
+            playSoundBtn.classList.remove('playing');
+            soundIndicator.classList.remove('active');
+            soundIndicator.classList.remove('error');
+        }
+
+        function playSound(filename) {
+            stopCurrentAudio();
+            
+            currentAudio = new Audio(filename);
+            currentAudio.volume = 1.0;
+            
+            playSoundBtn.classList.add('playing');
+            soundIndicator.textContent = 'Svira...';
+            soundIndicator.classList.remove('error');
+            soundIndicator.classList.add('active');
+            
+            currentAudio.play()
+                .then(() => {
+                    console.log(`Playing sound: ${filename}`);
+                    canClick = true;
+                    enableCards();
+                })
+                .catch((error) => {
+                    console.error(`Audio error for ${filename}:`, error);
+                    soundIndicator.textContent = 'Zvuk nije pronađen!';
+                    soundIndicator.classList.add('error');
+                    canClick = true;
+                    enableCards();
+                    
+                    setTimeout(() => {
+                        stopCurrentAudio();
+                    }, 2500);
+                });
+            
+            currentAudio.addEventListener('ended', () => {
+                stopCurrentAudio();
+            });
+        }
+
+        function enableCards() {
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('disabled');
+            });
+        }
+
+        function disableCards() {
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.add('disabled');
+            });
+        }
+
+        function createConfetti() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#ff1493', '#00ced1'];
+            
+            for (let i = 0; i < 60; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = '-20px';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.3 + 's';
+                    confetti.style.animationDuration = (Math.random() * 1 + 2) + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3500);
+                }, i * 25);
+            }
+        }
+
+        function renderLevel() {
+            const level = levels[currentLevel];
+            levelIndicator.textContent = `Nivo ${currentLevel + 1} od ${levels.length}`;
+            cardsGrid.innerHTML = '';
+            canClick = false;
+            stopCurrentAudio();
+            
+            level.options.forEach(option => {
+                const card = document.createElement('div');
+                card.className = 'card disabled';
+                card.innerHTML = `
+                    <div class="card-emoji">${option.emoji}</div>
+                    <div class="card-label">${option.label}</div>
+                `;
+                
+                card.addEventListener('click', () => handleCardClick(option.id, card));
+                cardsGrid.appendChild(card);
+            });
+        }
+
+        function handleCardClick(selectedId, cardElement) {
+            if (!canClick || cardElement.classList.contains('disabled')) return;
+            
+            const level = levels[currentLevel];
+            
+            if (selectedId === level.target) {
+                canClick = false;
+                disableCards();
+                stopCurrentAudio();
+                
+                cardElement.classList.add('correct');
+                createConfetti();
+                
+                setTimeout(() => {
+                    successOverlay.classList.add('active');
+                }, 900);
+            } else {
+                cardElement.classList.add('incorrect');
+                setTimeout(() => {
+                    cardElement.classList.remove('incorrect');
+                }, 500);
+            }
+        }
+
+        playSoundBtn.addEventListener('click', () => {
+            const level = levels[currentLevel];
+            const targetOption = level.options.find(opt => opt.id === level.target);
+            playSound(targetOption.sound);
+        });
+
+        nextBtn.addEventListener('click', () => {
+            successOverlay.classList.remove('active');
+            currentLevel++;
+            
+            if (currentLevel < levels.length) {
+                renderLevel();
+            } else {
+                cardsGrid.innerHTML = '<div class="game-complete">🏆 ZAVRŠIO SI SVE NIVOE! 🏆</div>';
+                playSoundBtn.style.display = 'none';
+                levelIndicator.textContent = 'Igra završena!';
+            }
+        });
+
+        renderLevel();
+    </script>
+</body>
+</html>

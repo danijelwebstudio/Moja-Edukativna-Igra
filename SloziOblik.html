@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Složi Oblik - 10 Nivoa</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(135deg, #FFF9C4 0%, #FFECB3 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    #game-container {
+      width: 95vmin;
+      height: 100vmin;
+      max-width: 800px;
+      max-height: 700px;
+      background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+      border-radius: 24px;
+      box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #header {
+      height: 70px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      color: white;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    #back-btn {
+      background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+      border: none;
+      padding: 12px 24px;
+      border-radius: 14px;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255,152,0,0.4);
+      transition: all 0.2s;
+    }
+
+    #back-btn:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 8px rgba(255,152,0,0.4);
+    }
+
+    #level-indicator {
+      font-size: 22px;
+      font-weight: bold;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    #svg-container {
+      flex: 1;
+      position: relative;
+      touch-action: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      touch-action: none;
+    }
+
+    .piece-group {
+      cursor: grab;
+      transition: filter 0.2s;
+    }
+
+    .piece-group:active {
+      cursor: grabbing;
+    }
+
+    .piece-group.snapped {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .piece-group:hover:not(.snapped) {
+      filter: brightness(1.15) drop-shadow(0 0 8px rgba(255,255,255,0.8));
+    }
+
+    #success-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.96);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #success-overlay.show {
+      display: flex;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    #success-text {
+      font-size: 64px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 30px;
+      animation: bounce 1s infinite;
+      text-shadow: 0 4px 8px rgba(76,175,80,0.3);
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-25px); }
+    }
+
+    #next-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      padding: 20px 55px;
+      border-radius: 24px;
+      color: white;
+      font-weight: bold;
+      font-size: 28px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+      transition: all 0.2s;
+    }
+
+    #next-btn:active {
+      transform: scale(0.95);
+      box-shadow: 0 3px 12px rgba(102,126,234,0.4);
+    }
+
+    .confetti {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      animation: confettiFall 3s linear;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(700px) rotate(720deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="header">
+      <button id="back-btn" onclick="window.location.href='index.html'">🔙 NAZAD NA IGRE</button>
+      <div id="level-indicator">Nivo 1/10</div>
+    </div>
+    
+    <div id="svg-container">
+      <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Gradient Definitions -->
+          <linearGradient id="gradient-blue" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#42A5F5;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#1976D2;stop-opacity:1" />
+          </linearGradient>
+          
+          <linearGradient id="gradient-red" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#EF5350;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#C62828;stop-opacity:1" />
+          </linearGradient>
+          
+          <linearGradient id="gradient-orange" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#FFA726;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#EF6C00;stop-opacity:1" />
+          </linearGradient>
+          
+          <radialGradient id="gradient-pink">
+            <stop offset="0%" style="stop-color:#F48FB1;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#C2185B;stop-opacity:1" />
+          </radialGradient>
+          
+          <linearGradient id="gradient-green" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#66BB6A;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#2E7D32;stop-opacity:1" />
+          </linearGradient>
+          
+          <linearGradient id="gradient-brown" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#A1887F;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#5D4037;stop-opacity:1" />
+          </linearGradient>
+          
+          <radialGradient id="gradient-white">
+            <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#E0E0E0;stop-opacity:1" />
+          </radialGradient>
+          
+          <linearGradient id="gradient-black" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#424242;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#212121;stop-opacity:1" />
+          </linearGradient>
+          
+          <linearGradient id="gradient-yellow" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#FFEB3B;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#F57F17;stop-opacity:1" />
+          </linearGradient>
+          
+          <linearGradient id="gradient-purple" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#AB47BC;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#6A1B9A;stop-opacity:1" />
+          </linearGradient>
+          
+          <linearGradient id="gradient-teal" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#26C6DA;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#00838F;stop-opacity:1" />
+          </linearGradient>
+          
+          <linearGradient id="gradient-gray" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#90A4AE;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#455A64;stop-opacity:1" />
+          </linearGradient>
+
+          <!-- Filters -->
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <filter id="shadow">
+            <feDropShadow dx="0" dy="6" stdDeviation="5" flood-opacity="0.25"/>
+          </filter>
+        </defs>
+        
+        <g id="targets"></g>
+        <g id="pieces"></g>
+        <g id="effects"></g>
+      </svg>
+
+      <div id="success-overlay">
+        <div id="success-text">BRAVO! 🎉</div>
+        <button id="next-btn">DALJE ➡️</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const levels = [
+      {
+        name: 'KUĆA',
+        targets: [
+          { id: 'base', type: 'rect', x: 400, y: 270, width: 140, height: 140, rx: 12 },
+          { id: 'roof', type: 'triangle', x: 400, y: 150, size: 140 }
+        ],
+        pieces: [
+          { id: 'base', type: 'rect', x: 250, y: 500, width: 140, height: 140, rx: 12, gradient: 'gradient-blue' },
+          { id: 'roof', type: 'triangle', x: 550, y: 500, size: 140, gradient: 'gradient-red' }
+        ]
+      },
+      {
+        name: 'SLADOLED',
+        targets: [
+          { id: 'cone', type: 'triangle-inverted', x: 400, y: 260, size: 130 },
+          { id: 'scoop', type: 'circle', x: 400, y: 165, radius: 55 }
+        ],
+        pieces: [
+          { id: 'cone', type: 'triangle-inverted', x: 250, y: 500, size: 130, gradient: 'gradient-orange' },
+          { id: 'scoop', type: 'circle', x: 550, y: 500, radius: 55, gradient: 'gradient-pink' }
+        ]
+      },
+      {
+        name: 'DRVO',
+        targets: [
+          { id: 'trunk', type: 'rect', x: 400, y: 290, width: 50, height: 120, rx: 8 },
+          { id: 'foliage', type: 'triangle', x: 400, y: 170, size: 150 }
+        ],
+        pieces: [
+          { id: 'trunk', type: 'rect', x: 250, y: 500, width: 50, height: 120, rx: 8, gradient: 'gradient-brown' },
+          { id: 'foliage', type: 'triangle', x: 550, y: 500, size: 150, gradient: 'gradient-green' }
+        ]
+      },
+      {
+        name: 'SNEŠKO BELIĆ',
+        targets: [
+          { id: 'bottom', type: 'circle', x: 400, y: 300, radius: 70 },
+          { id: 'middle', type: 'circle', x: 400, y: 200, radius: 55 },
+          { id: 'head', type: 'circle', x: 400, y: 120, radius: 40 }
+        ],
+        pieces: [
+          { id: 'bottom', type: 'circle', x: 200, y: 500, radius: 70, gradient: 'gradient-white' },
+          { id: 'middle', type: 'circle', x: 400, y: 500, radius: 55, gradient: 'gradient-white' },
+          { id: 'head', type: 'circle', x: 600, y: 500, radius: 40, gradient: 'gradient-white' }
+        ]
+      },
+      {
+        name: 'KAMION',
+        targets: [
+          { id: 'body', type: 'rect', x: 320, y: 220, width: 220, height: 90, rx: 12 },
+          { id: 'cabin', type: 'rect', x: 480, y: 175, width: 80, height: 70, rx: 10 },
+          { id: 'wheel1', type: 'circle', x: 360, y: 320, radius: 35 },
+          { id: 'wheel2', type: 'circle', x: 480, y: 320, radius: 35 }
+        ],
+        pieces: [
+          { id: 'body', type: 'rect', x: 180, y: 500, width: 220, height: 90, rx: 12, gradient: 'gradient-green' },
+          { id: 'cabin', type: 'rect', x: 380, y: 500, width: 80, height: 70, rx: 10, gradient: 'gradient-blue' },
+          { id: 'wheel1', type: 'circle', x: 540, y: 500, radius: 35, gradient: 'gradient-black' },
+          { id: 'wheel2', type: 'circle', x: 650, y: 500, radius: 35, gradient: 'gradient-black' }
+        ]
+      },
+      {
+        name: 'RAKETA',
+        targets: [
+          { id: 'body', type: 'rect', x: 400, y: 260, width: 80, height: 180, rx: 10 },
+          { id: 'nose', type: 'triangle', x: 400, y: 130, size: 90 }
+        ],
+        pieces: [
+          { id: 'body', type: 'rect', x: 280, y: 500, width: 80, height: 180, rx: 10, gradient: 'gradient-red' },
+          { id: 'nose', type: 'triangle', x: 520, y: 500, size: 90, gradient: 'gradient-yellow' }
+        ]
+      },
+      {
+        name: 'BROD',
+        targets: [
+          { id: 'hull', type: 'semicircle', x: 400, y: 280, width: 200, height: 100 },
+          { id: 'sail', type: 'triangle', x: 400, y: 170, size: 130 }
+        ],
+        pieces: [
+          { id: 'hull', type: 'semicircle', x: 250, y: 500, width: 200, height: 100, gradient: 'gradient-brown' },
+          { id: 'sail', type: 'triangle', x: 550, y: 500, size: 130, gradient: 'gradient-white' }
+        ]
+      },
+      {
+        name: 'PEČURKA',
+        targets: [
+          { id: 'stem', type: 'rect', x: 400, y: 290, width: 50, height: 100, rx: 25 },
+          { id: 'cap', type: 'semicircle', x: 400, y: 190, width: 140, height: 70 }
+        ],
+        pieces: [
+          { id: 'stem', type: 'rect', x: 280, y: 500, width: 50, height: 100, rx: 25, gradient: 'gradient-white' },
+          { id: 'cap', type: 'semicircle', x: 520, y: 500, width: 140, height: 70, gradient: 'gradient-red' }
+        ]
+      },
+      {
+        name: 'GUSENICA',
+        targets: [
+          { id: 'circle1', type: 'circle', x: 300, y: 230, radius: 50 },
+          { id: 'circle2', type: 'circle', x: 400, y: 230, radius: 50 },
+          { id: 'circle3', type: 'circle', x: 500, y: 230, radius: 50 }
+        ],
+        pieces: [
+          { id: 'circle1', type: 'circle', x: 250, y: 500, radius: 50, gradient: 'gradient-green' },
+          { id: 'circle2', type: 'circle', x: 400, y: 500, radius: 50, gradient: 'gradient-green' },
+          { id: 'circle3', type: 'circle', x: 550, y: 500, radius: 50, gradient: 'gradient-green' }
+        ]
+      },
+      {
+        name: 'ROBOT',
+        targets: [
+          { id: 'head', type: 'rect', x: 400, y: 150, width: 90, height: 90, rx: 12 },
+          { id: 'body', type: 'rect', x: 400, y: 270, width: 120, height: 100, rx: 10 },
+          { id: 'legs', type: 'rect', x: 400, y: 360, width: 80, height: 50, rx: 8 }
+        ],
+        pieces: [
+          { id: 'head', type: 'rect', x: 220, y: 500, width: 90, height: 90, rx: 12, gradient: 'gradient-gray' },
+          { id: 'body', type: 'rect', x: 400, y: 500, width: 120, height: 100, rx: 10, gradient: 'gradient-purple' },
+          { id: 'legs', type: 'rect', x: 580, y: 500, width: 80, height: 50, rx: 8, gradient: 'gradient-teal' }
+        ]
+      }
+    ];
+
+    let currentLevel = 0;
+    let draggedGroup = null;
+    let dragOffset = { x: 0, y: 0 };
+    let snappedCount = 0;
+    let svg = null;
+    let targetsGroup = null;
+    let piecesGroup = null;
+    let effectsGroup = null;
+
+    function init() {
+      svg = document.querySelector('svg');
+      targetsGroup = document.getElementById('targets');
+      piecesGroup = document.getElementById('pieces');
+      effectsGroup = document.getElementById('effects');
+
+      document.getElementById('next-btn').addEventListener('click', nextLevel);
+      svg.addEventListener('pointerdown', handlePointerDown);
+      svg.addEventListener('pointermove', handlePointerMove);
+      svg.addEventListener('pointerup', handlePointerUp);
+      svg.addEventListener('pointercancel', handlePointerUp);
+
+      loadLevel();
+    }
+
+    function loadLevel() {
+      targetsGroup.innerHTML = '';
+      piecesGroup.innerHTML = '';
+      effectsGroup.innerHTML = '';
+      snappedCount = 0;
+      draggedGroup = null;
+
+      document.getElementById('level-indicator').textContent = `Nivo ${currentLevel + 1}/${levels.length}`;
+      document.getElementById('success-overlay').classList.remove('show');
+
+      const level = levels[currentLevel];
+
+      level.targets.forEach(target => {
+        const el = createTargetShape(target);
+        targetsGroup.appendChild(el);
+      });
+
+      level.pieces.forEach(piece => {
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.classList.add('piece-group');
+        group.setAttribute('data-piece-id', piece.id);
+        group.setAttribute('transform', `translate(${piece.x}, ${piece.y})`);
+        group.setAttribute('filter', 'url(#shadow)');
+        
+        const shape = createPieceShape(piece);
+        group.appendChild(shape);
+        
+        piecesGroup.appendChild(group);
+      });
+    }
+
+    function createTargetShape(obj) {
+      let el;
+      
+      if (obj.type === 'rect') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        el.setAttribute('x', obj.x - obj.width / 2);
+        el.setAttribute('y', obj.y - obj.height / 2);
+        el.setAttribute('width', obj.width);
+        el.setAttribute('height', obj.height);
+        el.setAttribute('rx', obj.rx || 10);
+      } else if (obj.type === 'circle') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        el.setAttribute('cx', obj.x);
+        el.setAttribute('cy', obj.y);
+        el.setAttribute('r', obj.radius);
+      } else if (obj.type === 'triangle') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const halfSize = obj.size / 2;
+        const height = obj.size * 0.866;
+        const d = `M ${obj.x} ${obj.y - height/2} L ${obj.x - halfSize} ${obj.y + height/2} L ${obj.x + halfSize} ${obj.y + height/2} Z`;
+        el.setAttribute('d', d);
+      } else if (obj.type === 'triangle-inverted') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const halfSize = obj.size / 2;
+        const height = obj.size * 0.866;
+        const d = `M ${obj.x} ${obj.y + height/2} L ${obj.x - halfSize} ${obj.y - height/2} L ${obj.x + halfSize} ${obj.y - height/2} Z`;
+        el.setAttribute('d', d);
+      } else if (obj.type === 'semicircle') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const rx = obj.width / 2;
+        const ry = obj.height;
+        const d = `M ${obj.x - rx} ${obj.y} A ${rx} ${ry} 0 0 1 ${obj.x + rx} ${obj.y} L ${obj.x + rx} ${obj.y} Z`;
+        el.setAttribute('d', d);
+      }
+
+      el.setAttribute('fill', 'rgba(255, 255, 255, 0.3)');
+      el.setAttribute('stroke', '#BDBDBD');
+      el.setAttribute('stroke-width', '4');
+      el.setAttribute('stroke-dasharray', '12,6');
+      el.setAttribute('data-target-id', obj.id);
+
+      return el;
+    }
+
+    function createPieceShape(obj) {
+      let el;
+      
+      if (obj.type === 'rect') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        el.setAttribute('x', -obj.width / 2);
+        el.setAttribute('y', -obj.height / 2);
+        el.setAttribute('width', obj.width);
+        el.setAttribute('height', obj.height);
+        el.setAttribute('rx', obj.rx || 10);
+      } else if (obj.type === 'circle') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        el.setAttribute('cx', 0);
+        el.setAttribute('cy', 0);
+        el.setAttribute('r', obj.radius);
+      } else if (obj.type === 'triangle') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const halfSize = obj.size / 2;
+        const height = obj.size * 0.866;
+        const d = `M 0 ${-height/2} L ${-halfSize} ${height/2} L ${halfSize} ${height/2} Z`;
+        el.setAttribute('d', d);
+      } else if (obj.type === 'triangle-inverted') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const halfSize = obj.size / 2;
+        const height = obj.size * 0.866;
+        const d = `M 0 ${height/2} L ${-halfSize} ${-height/2} L ${halfSize} ${-height/2} Z`;
+        el.setAttribute('d', d);
+      } else if (obj.type === 'semicircle') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const rx = obj.width / 2;
+        const ry = obj.height;
+        const d = `M ${-rx} 0 A ${rx} ${ry} 0 0 1 ${rx} 0 L ${rx} 0 Z`;
+        el.setAttribute('d', d);
+      }
+
+      el.setAttribute('fill', `url(#${obj.gradient})`);
+      el.setAttribute('stroke', 'rgba(255,255,255,0.4)');
+      el.setAttribute('stroke-width', '3');
+
+      return el;
+    }
+
+    function handlePointerDown(e) {
+      const target = e.target;
+      let group = target.closest('.piece-group');
+      
+      if (!group || group.classList.contains('snapped')) return;
+
+      draggedGroup = group;
+      draggedGroup.style.cursor = 'grabbing';
+
+      const svgPoint = getSVGPoint(e);
+      const transform = draggedGroup.getAttribute('transform');
+      const match = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+      const currentX = match ? parseFloat(match[1]) : 0;
+      const currentY = match ? parseFloat(match[2]) : 0;
+
+      dragOffset.x = svgPoint.x - currentX;
+      dragOffset.y = svgPoint.y - currentY;
+
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function handlePointerMove(e) {
+      if (!draggedGroup) return;
+
+      const svgPoint = getSVGPoint(e);
+      let newX = svgPoint.x - dragOffset.x;
+      let newY = svgPoint.y - dragOffset.y;
+
+      newX = Math.max(50, Math.min(750, newX));
+      newY = Math.max(50, Math.min(550, newY));
+
+      draggedGroup.setAttribute('transform', `translate(${newX}, ${newY})`);
+
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function handlePointerUp(e) {
+      if (!draggedGroup) return;
+
+      const pieceId = draggedGroup.getAttribute('data-piece-id');
+      const target = document.querySelector(`[data-target-id="${pieceId}"]`);
+
+      if (target) {
+        const transform = draggedGroup.getAttribute('transform');
+        const match = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+        const pieceX = match ? parseFloat(match[1]) : 0;
+        const pieceY = match ? parseFloat(match[2]) : 0;
+
+        const targetData = levels[currentLevel].targets.find(t => t.id === pieceId);
+        const targetX = targetData.x;
+        const targetY = targetData.y;
+
+        const distance = Math.sqrt(
+          Math.pow(pieceX - targetX, 2) +
+          Math.pow(pieceY - targetY, 2)
+        );
+
+        if (distance < 70) {
+          draggedGroup.style.transition = 'transform 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+          draggedGroup.setAttribute('transform', `translate(${targetX}, ${targetY})`);
+          
+          setTimeout(() => {
+            draggedGroup.style.transition = '';
+            draggedGroup.classList.add('snapped');
+            draggedGroup.setAttribute('filter', 'url(#glow)');
+          }, 350);
+
+          target.setAttribute('fill', 'rgba(129, 199, 132, 0.25)');
+          target.setAttribute('stroke', '#4CAF50');
+          target.setAttribute('stroke-width', '5');
+          
+          createRipple(targetX, targetY);
+          playSnapSound();
+          
+          snappedCount++;
+          
+          if (snappedCount === levels[currentLevel].pieces.length) {
+            setTimeout(showSuccess, 600);
+          }
+        }
+      }
+
+      draggedGroup.style.cursor = 'grab';
+      draggedGroup = null;
+
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function getSVGPoint(e) {
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function createRipple(x, y) {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', x);
+      circle.setAttribute('cy', y);
+      circle.setAttribute('r', 10);
+      circle.setAttribute('fill', 'none');
+      circle.setAttribute('stroke', '#4CAF50');
+      circle.setAttribute('stroke-width', 4);
+      circle.setAttribute('opacity', 1);
+      
+      effectsGroup.appendChild(circle);
+
+      let r = 10;
+      let opacity = 1;
+      const interval = setInterval(() => {
+        r += 4;
+        opacity -= 0.04;
+        circle.setAttribute('r', r);
+        circle.setAttribute('opacity', opacity);
+        
+        if (opacity <= 0) {
+          clearInterval(interval);
+          circle.remove();
+        }
+      }, 20);
+    }
+
+    function playSnapSound() {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 880;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.15);
+      } catch (e) {
+        // Audio not supported
+      }
+    }
+
+    function showSuccess() {
+      const overlay = document.getElementById('success-overlay');
+      overlay.classList.add('show');
+      createConfetti();
+    }
+
+    function createConfetti() {
+      const overlay = document.getElementById('success-overlay');
+      const colors = ['#FF5252', '#FFD740', '#69F0AE', '#40C4FF', '#E040FB', '#FF6E40'];
+      
+      for (let i = 0; i < 60; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = `${Math.random() * 100}%`;
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDelay = `${Math.random() * 0.6}s`;
+        confetti.style.animationDuration = `${2.5 + Math.random()}s`;
+        overlay.appendChild(confetti);
+        
+        setTimeout(() => confetti.remove(), 3500);
+      }
+    }
+
+    function nextLevel() {
+      currentLevel++;
+      if (currentLevel >= levels.length) {
+        currentLevel = 0;
+      }
+      loadLevel();
+    }
+
+    init();
+  </script>
+</body>
+</html>
