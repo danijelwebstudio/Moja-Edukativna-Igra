@@ -2,752 +2,720 @@
 <html lang="sr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
-    <title>Učim Reči - Latinica</title>
+    <meta name="viewport"="width=device-width, initial-scale=1.0">
+    <title>Povuci i Prati</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         body {
-            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
-            background: linear-gradient(135deg, #FFF9C4 0%, #FFF59D 100%);
-            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            position: fixed;
-            width: 100%;
-            height: 100%;
+            min-height: 100vh;
+            padding: 20px;
         }
 
         h1 {
-            font-size: 4vmin;
-            color: #FF6B6B;
-            margin: 1.5vmin 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-            user-select: none;
-            pointer-events: none;
+            color: white;
+            font-size: clamp(24px, 5vw, 42px);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
-        .container {
-            width: 95vw;
-            max-width: 600px;
-            height: 95vw;
-            max-height: 600px;
+        #gameContainer {
             position: relative;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: auto;
             touch-action: none;
         }
 
-        @media (min-width: 601px) {
-            .container {
-                width: 80vw;
-                height: 80vw;
-            }
+        #levelIndicator {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: clamp(14px, 2.5vw, 18px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 50;
         }
 
-        svg {
+        #controls {
+            margin-top: 20px;
+            text-align: center;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: clamp(16px, 3vw, 22px);
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #homeBtn {
+            background: #4CAF50;
+        }
+
+        #homeBtn:hover {
+            background: #45a049;
+        }
+
+        #winMessage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(255, 255, 255, 0.98);
+            padding: 40px 60px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.4);
+            z-index: 100;
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        #winMessage.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        #winMessage h2 {
+            color: #4CAF50;
+            font-size: clamp(32px, 6vw, 56px);
+            margin-bottom: 20px;
+            animation: bounce 0.6s infinite alternate;
+        }
+
+        #winMessage p {
+            font-size: clamp(16px, 3vw, 20px);
+            color: #666;
+            margin-top: 10px;
+        }
+
+        #levelTransition {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            background: white;
-            border-radius: 3vmin;
-            box-shadow: 0 1.5vmin 6vmin rgba(0,0,0,0.2);
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
+            background: rgba(102, 126, 234, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
         }
 
-        .track {
-            fill: none;
-            stroke: #E0E0E0;
-            stroke-width: 80;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            pointer-events: none;
+        #levelTransition.show {
+            opacity: 1;
+            pointer-events: all;
         }
 
-        .fill {
-            fill: none;
-            stroke: #2196F3;
-            stroke-width: 80;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            pointer-events: none;
+        #levelTransition h2 {
+            color: white;
+            font-size: clamp(40px, 8vw, 72px);
+            margin-bottom: 20px;
+            animation: pulse 1s ease-in-out infinite;
         }
 
-        .arrow {
-            fill: white;
-            opacity: 0.95;
-            pointer-events: none;
+        #levelTransition p {
+            color: white;
+            font-size: clamp(18px, 4vw, 28px);
+            margin-bottom: 10px;
         }
 
-        .marker {
-            fill: #2196F3;
-            filter: drop-shadow(0 4px 8px rgba(33, 150, 243, 0.4));
-            pointer-events: none;
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .confetti {
             position: absolute;
-            width: 12px;
-            height: 12px;
-            pointer-events: none;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            animation: confetti-fall 3s linear forwards;
         }
 
-        .menu-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #FFF9C4 0%, #FFF59D 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            z-index: 1000;
-            touch-action: none;
-            padding: 2vmin;
-        }
-
-        .menu-screen.hidden {
-            display: none;
-        }
-
-        .menu-title {
-            font-size: 6vmin;
-            color: #FF6B6B;
-            margin-bottom: 5vmin;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
-            user-select: none;
-            pointer-events: none;
-            text-align: center;
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 2vmin;
-            max-width: 900px;
-            width: 100%;
-            padding: 0 2vmin;
-        }
-
-        @media (max-width: 600px) {
-            .menu-grid {
-                grid-template-columns: 1fr;
-                gap: 2vmin;
-            }
-            
-            .menu-title {
-                font-size: 8vmin;
-                margin-bottom: 6vmin;
-            }
-        }
-
-        .menu-btn {
-            padding: 4vmin 5vmin;
-            font-size: 3.5vmin;
-            font-weight: bold;
-            background: white;
-            color: #FF6B6B;
-            border: 3px solid #FF6B6B;
-            border-radius: 3vmin;
-            cursor: pointer;
-            box-shadow: 0 1.5vmin 3vmin rgba(0,0,0,0.15);
-            transition: transform 0.2s, box-shadow 0.2s;
-            user-select: none;
-            touch-action: manipulation;
-            min-height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-decoration: none;
-            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
-        }
-
-        .menu-btn:hover {
-            transform: translateY(-0.5vmin);
-            box-shadow: 0 2vmin 4vmin rgba(0,0,0,0.25);
-        }
-
-        .menu-btn:active {
-            transform: scale(0.95);
-        }
-
-        .link-btn {
-            text-decoration: none;
-        }
-
-        .success-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            z-index: 1000;
-            touch-action: none;
-            padding: 2vmin;
-        }
-
-        .success-overlay.show {
-            display: flex;
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .success-emoji {
-            font-size: 20vmin;
-            animation: bounce 0.6s ease-in-out;
-            user-select: none;
-            pointer-events: none;
-        }
-
-        .success-word {
-            font-size: 8vmin;
-            color: white;
-            font-weight: bold;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
-            margin-top: 3vmin;
-            user-select: none;
-            pointer-events: none;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-
-        .success-buttons {
-            display: flex;
-            gap: 3vmin;
-            margin-top: 6vmin;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .success-btn {
-            padding: 3vmin 6vmin;
-            font-size: 3.5vmin;
-            font-weight: bold;
-            background: white;
-            color: #4CAF50;
-            border: none;
-            border-radius: 8vmin;
-            cursor: pointer;
-            box-shadow: 0 1.5vmin 3vmin rgba(0,0,0,0.3);
-            transition: transform 0.2s;
-            user-select: none;
-            touch-action: manipulation;
-            min-height: 60px;
-        }
-
-        .success-btn:active {
-            transform: scale(0.95);
-        }
-
-        @media (max-width: 600px) {
-            .success-emoji {
-                font-size: 25vmin;
-            }
-            
-            .success-word {
-                font-size: 10vmin;
-            }
-            
-            .success-btn {
-                font-size: 4vmin;
-                padding: 3.5vmin 7vmin;
-            }
-        }
-
-        .progress {
-            font-size: 3.5vmin;
-            color: #FF6B6B;
-            margin-top: 2vmin;
-            font-weight: bold;
-            user-select: none;
-            pointer-events: none;
-        }
-
-        @media (max-width: 600px) {
-            .progress {
-                font-size: 4.5vmin;
-            }
-        }
-
-        .game-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-        }
-
-        .game-screen.hidden {
-            display: none;
-        }
-
-        @keyframes confettiFall {
+        @keyframes confetti-fall {
             to {
-                transform: translateY(100vh) rotate(720deg);
+                transform: translateY(600px) rotate(360deg);
                 opacity: 0;
             }
+        }
+
+        #instruction {
+            color: white;
+            font-size: clamp(14px, 2.5vw, 18px);
+            margin-bottom: 15px;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.2);
+            margin-top: 10px;
+            font-size: clamp(14px, 2.5vw, 18px);
         }
     </style>
 </head>
 <body>
-    <div class="menu-screen" id="menuScreen">
-        <div class="menu-title">Izaberi Reč 📚</div>
-        <div class="menu-grid">
-            <button class="menu-btn" onclick="startLesson(0)">👩 MAMA</button>
-            <button class="menu-btn" onclick="startLesson(1)">👨 TATA</button>
-            <button class="menu-btn" onclick="startLesson(2)">👁️ OKO</button>
-            <button class="menu-btn" onclick="startLesson(3)">👵 BABA</button>
-            <button class="menu-btn" onclick="startLesson(4)">🐕 PAS</button>
-            <a href="index.html" class="menu-btn link-btn">🔙 NAZAD NA IGRE</a>
+    <h1>🐱 Povuci i Prati 🐱</h1>
+    <div id="instruction">Prevuci mačku duž linije do cilja! Drži prst ili miš pritisnut.</div>
+    <div id="gameContainer">
+        <div id="levelIndicator">Trenutni Nivo: 1</div>
+        <canvas id="gameCanvas" width="800" height="500"></canvas>
+        <div id="winMessage">
+            <h2>BRAVO! 🎉</h2>
+            <p id="winText">Uspešno si prešao/la put!</p>
+        </div>
+        <div id="levelTransition">
+            <h2 id="transitionTitle">Nivo 2</h2>
+            <p id="transitionDifficulty">Srednje</p>
+            <p class="difficulty-badge" id="transitionHint">Putanja postaje zakrivljenija!</p>
         </div>
     </div>
-
-    <div class="game-screen hidden" id="gameScreen">
-        <h1 id="letterTitle">Lekcija: MAMA</h1>
-        <div class="container">
-            <svg id="canvas" viewBox="0 0 600 600"></svg>
-        </div>
-        <div class="progress" id="progress">Slovo: M</div>
-    </div>
-
-    <div class="success-overlay" id="successOverlay">
-        <div class="success-emoji" id="successEmoji">👩</div>
-        <div class="success-word" id="successWord">MAMA</div>
-        <div class="success-buttons">
-            <button class="success-btn" onclick="backToMenu()">🏠 NAZAD</button>
-            <button class="success-btn" onclick="nextLesson()">➡ DALJE</button>
-        </div>
+    <div id="controls">
+        <button id="newGameBtn">Igraj ispočetka</button>
+        <button id="homeBtn">Izaberi novu igricu</button>
     </div>
 
     <script>
-        const letterPaths = {
-            M: {
-                strokes: [
-                    { path: 'M 150 450 L 150 150', arrows: [{x: 150, y: 280, angle: -90}] },
-                    { path: 'M 150 150 L 300 350', arrows: [{x: 215, y: 235, angle: 50}] },
-                    { path: 'M 300 350 L 450 150', arrows: [{x: 385, y: 235, angle: -50}] },
-                    { path: 'M 450 150 L 450 450', arrows: [{x: 450, y: 280, angle: 90}] }
-                ]
-            },
-            A: {
-                strokes: [
-                    { path: 'M 200 450 L 300 150', arrows: [{x: 245, y: 280, angle: -65}] },
-                    { path: 'M 300 150 L 400 450', arrows: [{x: 355, y: 280, angle: 65}] },
-                    { path: 'M 240 320 L 360 320', arrows: [{x: 300, y: 320, angle: 0}] }
-                ]
-            },
-            T: {
-                strokes: [
-                    { path: 'M 200 150 L 400 150', arrows: [{x: 300, y: 150, angle: 0}] },
-                    { path: 'M 300 150 L 300 450', arrows: [{x: 300, y: 280, angle: 90}] }
-                ]
-            },
-            O: {
-                strokes: [
-                    { path: 'M 300 150 Q 450 150 450 300 Q 450 450 300 450 Q 150 450 150 300 Q 150 150 300 150', 
-                      arrows: [{x: 380, y: 180, angle: 0}, {x: 380, y: 420, angle: 180}, {x: 220, y: 420, angle: 180}] }
-                ]
-            },
-            K: {
-                strokes: [
-                    { path: 'M 200 150 L 200 450', arrows: [{x: 200, y: 280, angle: 90}] },
-                    { path: 'M 450 150 L 200 300', arrows: [{x: 320, y: 220, angle: -135}] },
-                    { path: 'M 200 300 L 450 450', arrows: [{x: 320, y: 380, angle: 45}] }
-                ]
-            },
-            B: {
-                strokes: [
-                    { path: 'M 200 150 L 200 450', arrows: [{x: 200, y: 280, angle: 90}] },
-                    { path: 'M 200 150 Q 370 150 370 225 Q 370 280 200 280', arrows: [{x: 285, y: 180, angle: 0}] },
-                    { path: 'M 200 280 Q 390 280 390 365 Q 390 450 200 450', arrows: [{x: 295, y: 340, angle: 0}] }
-                ]
-            },
-            P: {
-                strokes: [
-                    { path: 'M 200 450 L 200 150', arrows: [{x: 200, y: 280, angle: -90}] },
-                    { path: 'M 200 150 Q 400 150 400 250 Q 400 320 200 320', arrows: [{x: 300, y: 190, angle: 0}] }
-                ]
-            },
-            S: {
-                strokes: [
-                    { path: 'M 400 200 Q 350 150 250 180 Q 200 200 200 240 Q 200 280 300 300 Q 400 320 400 380 Q 400 420 350 445 Q 300 460 200 420', 
-                      arrows: [{x: 320, y: 170, angle: 180}, {x: 350, y: 300, angle: 0}, {x: 280, y: 430, angle: 180}] }
-                ]
-            }
-        };
+        // Canvas setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const winMessage = document.getElementById('winMessage');
+        const levelTransition = document.getElementById('levelTransition');
+        const levelIndicator = document.getElementById('levelIndicator');
 
-        const lessons = [
-            { name: 'MAMA', emoji: '👩', newLetters: ['M', 'A'], word: ['M', 'A', 'M', 'A'] },
-            { name: 'TATA', emoji: '👨', newLetters: ['T'], word: ['T', 'A', 'T', 'A'] },
-            { name: 'OKO', emoji: '👁️', newLetters: ['O', 'K'], word: ['O', 'K', 'O'] },
-            { name: 'BABA', emoji: '👵', newLetters: ['B'], word: ['B', 'A', 'B', 'A'] },
-            { name: 'PAS', emoji: '🐕', newLetters: ['P', 'S'], word: ['P', 'A', 'S'] }
+        // Level configurations (5 nivoa sa različitim težinama)
+        const LEVEL_CONFIGS = [
+            {
+                level: 1,
+                name: 'Lako',
+                pathType: 'gentle',
+                curvature: 30,
+                segments: 6,
+                obstacles: 1,
+                tolerance: 40,
+                pathWidth: 65,
+                hint: 'Prati blagu putanju!'
+            },
+            {
+                level: 2,
+                name: 'Srednje',
+                pathType: 'curved',
+                curvature: 60,
+                segments: 8,
+                obstacles: 2,
+                tolerance: 38,
+                pathWidth: 60,
+                hint: 'Putanja postaje zakrivljenija!'
+            },
+            {
+                level: 3,
+                name: 'Teško',
+                pathType: 's-curve',
+                curvature: 80,
+                segments: 10,
+                obstacles: 3,
+                tolerance: 35,
+                pathWidth: 55,
+                hint: 'Oprezno prati S-krivinu!'
+            },
+            {
+                level: 4,
+                name: 'Srednje-Teško',
+                pathType: 'wave',
+                curvature: 90,
+                segments: 12,
+                obstacles: 4,
+                tolerance: 33,
+                pathWidth: 50,
+                hint: 'Talasasta putanja zahteva pažnju!'
+            },
+            {
+                level: 5,
+                name: 'Najzahtevnije',
+                pathType: 'spiral',
+                curvature: 100,
+                segments: 14,
+                obstacles: 5,
+                tolerance: 30,
+                pathWidth: 45,
+                hint: 'Spiralna putanja - vrhunski izazov!'
+            }
         ];
 
-        let currentLessonIndex = 0;
-        let currentPhase = 'letter';
-        let currentLetterIndex = 0;
-        let currentWordLetterIndex = 0;
-        let currentStrokeIndex = 0;
-        let isDragging = false;
-        let currentProgress = 0;
-        let completedStrokes = [];
+        // Game state
+        let gameState = {
+            currentLevel: 0, // Index u LEVEL_CONFIGS nizu
+            isDragging: false,
+            characterX: 0,
+            characterY: 0,
+            characterSize: 40,
+            pathPoints: [],
+            pathWidth: 60,
+            tolerance: 35,
+            gameWon: false,
+            obstacles: []
+        };
 
-        const svg = document.getElementById('canvas');
-        const letterTitle = document.getElementById('letterTitle');
-        const progressText = document.getElementById('progress');
-        const successOverlay = document.getElementById('successOverlay');
-        const successEmoji = document.getElementById('successEmoji');
-        const successWord = document.getElementById('successWord');
-        const menuScreen = document.getElementById('menuScreen');
-        const gameScreen = document.getElementById('gameScreen');
-
-        let marker, pathElement, currentStrokeData;
-
-        function startLesson(lessonIndex) {
-            currentLessonIndex = lessonIndex;
-            currentPhase = 'letter';
-            currentLetterIndex = 0;
-            currentWordLetterIndex = 0;
-            
-            menuScreen.classList.add('hidden');
-            gameScreen.classList.remove('hidden');
-            
-            const lesson = lessons[lessonIndex];
-            letterTitle.textContent = `Lekcija: ${lesson.name}`;
-            
-            loadNextLetterPhase();
+        // Responsive canvas
+        function resizeCanvas() {
+            const container = document.getElementById('gameContainer');
+            const rect = container.getBoundingClientRect();
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = (rect.width * 0.625) + 'px';
         }
 
-        function backToMenu() {
-            successOverlay.classList.remove('show');
-            gameScreen.classList.add('hidden');
-            menuScreen.classList.remove('hidden');
-        }
-
-        function nextLesson() {
-            successOverlay.classList.remove('show');
-            
-            currentLessonIndex++;
-            if (currentLessonIndex >= lessons.length) {
-                currentLessonIndex = 0;
-            }
-            
-            startLesson(currentLessonIndex);
-        }
-
-        function loadNextLetterPhase() {
-            const lesson = lessons[currentLessonIndex];
-            
-            if (currentLetterIndex >= lesson.newLetters.length) {
-                currentPhase = 'word';
-                currentWordLetterIndex = 0;
-                loadNextWordLetter();
-                return;
-            }
-            
-            const letter = lesson.newLetters[currentLetterIndex];
-            currentStrokeIndex = 0;
-            completedStrokes = [];
-            
-            progressText.textContent = `Slovo: ${letter}`;
-            loadStroke(letter);
-        }
-
-        function loadNextWordLetter() {
-            const lesson = lessons[currentLessonIndex];
-            
-            if (currentWordLetterIndex >= lesson.word.length) {
-                completeLesson();
-                return;
-            }
-            
-            const letter = lesson.word[currentWordLetterIndex];
-            currentStrokeIndex = 0;
-            completedStrokes = [];
-            
-            const wordProgress = lesson.word.slice(0, currentWordLetterIndex + 1).join('');
-            progressText.textContent = `Reč: ${wordProgress}`;
-            
-            loadStroke(letter);
-        }
-
-        function loadStroke(letter) {
-            svg.innerHTML = '';
-            
-            const letterData = letterPaths[letter];
-            const stroke = letterData.strokes[currentStrokeIndex];
-            currentStrokeData = parsePathToPoints(stroke.path);
-            
-            completedStrokes.forEach(completedPath => {
-                const completed = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                completed.setAttribute('d', completedPath);
-                completed.setAttribute('class', 'fill');
-                svg.appendChild(completed);
-            });
-            
-            const track = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            track.setAttribute('d', stroke.path);
-            track.setAttribute('class', 'track');
-            svg.appendChild(track);
-            
-            stroke.arrows.forEach(arrow => {
-                const arrowGroup = createArrow(arrow.x, arrow.y, arrow.angle);
-                svg.appendChild(arrowGroup);
-            });
-            
-            pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            pathElement.setAttribute('class', 'fill');
-            pathElement.setAttribute('d', '');
-            svg.appendChild(pathElement);
-            
-            const startPoint = currentStrokeData[0];
-            marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            marker.setAttribute('class', 'marker');
-            marker.setAttribute('cx', startPoint.x);
-            marker.setAttribute('cy', startPoint.y);
-            marker.setAttribute('r', '50');
-            svg.appendChild(marker);
-            
-            currentProgress = 0;
-            updateFillPath();
-        }
-
-        function parsePathToPoints(pathString) {
+        // Generiši putanju na osnovu tipa
+        function generatePath(config) {
             const points = [];
-            const commands = pathString.match(/[MLQC][^MLQC]*/g);
-            let lastX = 0, lastY = 0;
-            
-            commands.forEach(cmd => {
-                const type = cmd[0];
-                const coords = cmd.slice(1).trim().split(/[\s,]+/).map(Number);
-                
-                if (type === 'M' || type === 'L') {
-                    points.push({x: coords[0], y: coords[1]});
-                    lastX = coords[0];
-                    lastY = coords[1];
-                } else if (type === 'Q') {
-                    const cpX = coords[0], cpY = coords[1];
-                    const endX = coords[2], endY = coords[3];
-                    
-                    for (let t = 0; t <= 1; t += 0.008) {
-                        const x = (1-t)*(1-t)*lastX + 2*(1-t)*t*cpX + t*t*endX;
-                        const y = (1-t)*(1-t)*lastY + 2*(1-t)*t*cpY + t*t*endY;
-                        points.push({x, y});
+            const startX = 80;
+            const startY = canvas.height / 2;
+            const endX = canvas.width - 80;
+            const endY = canvas.height / 2;
+            const segments = config.segments;
+
+            switch(config.pathType) {
+                case 'gentle':
+                    // Blaga putanja sa manjim zakrivljenjem
+                    for (let i = 0; i <= segments; i++) {
+                        const t = i / segments;
+                        const x = startX + (endX - startX) * t;
+                        const y = startY + Math.sin(t * Math.PI) * config.curvature * 0.5;
+                        points.push({ x, y });
                     }
-                    lastX = endX;
-                    lastY = endY;
-                }
-            });
-            
+                    break;
+
+                case 'curved':
+                    // Zakrivljena putanja
+                    for (let i = 0; i <= segments; i++) {
+                        const t = i / segments;
+                        const x = startX + (endX - startX) * t;
+                        const y = startY + Math.sin(t * Math.PI * 1.5) * config.curvature;
+                        points.push({ x, y });
+                    }
+                    break;
+
+                case 's-curve':
+                    // S-krivina
+                    for (let i = 0; i <= segments; i++) {
+                        const t = i / segments;
+                        const x = startX + (endX - startX) * t;
+                        const y = startY + Math.sin(t * Math.PI * 2) * config.curvature;
+                        points.push({ x, y });
+                    }
+                    break;
+
+                case 'wave':
+                    // Talasasta putanja
+                    for (let i = 0; i <= segments; i++) {
+                        const t = i / segments;
+                        const x = startX + (endX - startX) * t;
+                        const y = startY + Math.sin(t * Math.PI * 3) * config.curvature * 0.7;
+                        points.push({ x, y });
+                    }
+                    break;
+
+                case 'spiral':
+                    // Spiralna putanja
+                    for (let i = 0; i <= segments; i++) {
+                        const t = i / segments;
+                        const radius = config.curvature * (1 - t * 0.5);
+                        const angle = t * Math.PI * 2.5;
+                        const x = startX + (endX - startX) * t;
+                        const y = startY + Math.sin(angle) * radius;
+                        points.push({ x, y });
+                    }
+                    break;
+            }
+
             return points;
         }
 
-        function createArrow(x, y, angle) {
-            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            g.setAttribute('transform', `translate(${x}, ${y}) rotate(${angle})`);
-            
-            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            path.setAttribute('d', 'M -20 -15 L 20 0 L -20 15 Z');
-            path.setAttribute('class', 'arrow');
-            g.appendChild(path);
-            
-            return g;
-        }
+        // Generiši prepreke na osnovu nivoa
+        function generateObstacles(config, pathPoints) {
+            const obstacles = [];
+            const obstacleCount = config.obstacles;
+            const offsetFromPath = 30;
 
-        function updateFillPath() {
-            if (currentProgress <= 0) {
-                pathElement.setAttribute('d', '');
-                return;
-            }
-            
-            const numPoints = Math.floor(currentProgress * (currentStrokeData.length - 1));
-            const points = currentStrokeData.slice(0, Math.max(1, numPoints + 1));
-            
-            if (points.length === 0) {
-                pathElement.setAttribute('d', '');
-                return;
-            }
-            
-            let pathD = `M ${points[0].x} ${points[0].y}`;
-            for (let i = 1; i < points.length; i++) {
-                pathD += ` L ${points[i].x} ${points[i].y}`;
-            }
-            
-            pathElement.setAttribute('d', pathD);
-        }
-
-        function projectPointOnPath(x, y) {
-            let minDist = Infinity;
-            let closestIndex = 0;
-            
-            for (let i = 0; i < currentStrokeData.length; i++) {
-                const point = currentStrokeData[i];
-                const dist = Math.hypot(point.x - x, point.y - y);
+            for (let i = 0; i < obstacleCount; i++) {
+                const segmentIndex = Math.floor((pathPoints.length / (obstacleCount + 1)) * (i + 1));
+                const point = pathPoints[segmentIndex];
                 
-                if (dist < minDist) {
-                    minDist = dist;
-                    closestIndex = i;
+                // Alternativno postavljaj prepreke gore i dole
+                const offsetY = (i % 2 === 0) ? 
+                    -(config.pathWidth / 2 + offsetFromPath) : 
+                    (config.pathWidth / 2 + offsetFromPath);
+
+                obstacles.push({
+                    x: point.x,
+                    y: point.y + offsetY,
+                    type: i % 3, // 0: krug, 1: kvadrat, 2: trougao
+                    size: 20 + (i % 2) * 10
+                });
+            }
+
+            return obstacles;
+        }
+
+        // Učitaj nivo
+        function loadLevel(levelIndex) {
+            const config = LEVEL_CONFIGS[levelIndex];
+            gameState.currentLevel = levelIndex;
+            gameState.gameWon = false;
+            gameState.isDragging = false;
+
+            // Ažuriraj parametre iz config-a
+            gameState.pathWidth = config.pathWidth;
+            gameState.tolerance = config.tolerance;
+
+            // Generiši putanju i prepreke
+            gameState.pathPoints = generatePath(config);
+            gameState.obstacles = generateObstacles(config, gameState.pathPoints);
+
+            // Postavi karakter na početak
+            gameState.characterX = gameState.pathPoints[0].x;
+            gameState.characterY = gameState.pathPoints[0].y;
+
+            // Ažuriraj UI
+            levelIndicator.textContent = `Trenutni Nivo: ${config.level}`;
+            winMessage.classList.remove('show');
+
+            draw();
+        }
+
+        // Prikaži prelaz na sledeći nivo
+        function showLevelTransition(levelIndex) {
+            const config = LEVEL_CONFIGS[levelIndex];
+            document.getElementById('transitionTitle').textContent = `Nivo ${config.level}`;
+            document.getElementById('transitionDifficulty').textContent = config.name;
+            document.getElementById('transitionHint').textContent = config.hint;
+
+            levelTransition.classList.add('show');
+
+            setTimeout(() => {
+                levelTransition.classList.remove('show');
+                loadLevel(levelIndex);
+            }, 2500);
+        }
+
+        // Initialize game
+        function initGame() {
+            gameState.currentLevel = 0;
+            loadLevel(0);
+        }
+
+        // Crtaj karakter (Emoji - Mačka)
+        function drawCharacter(x, y, isActive) {
+            const size = gameState.characterSize;
+            
+            // Svetlucanje ako je aktivan (pozadina)
+            if (isActive) {
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+                ctx.beginPath();
+                ctx.arc(x, y, size/2 + 10, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.8)';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(x, y, size/2 + 8, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            // Crtaj emoji mačku
+            ctx.font = `${size * 1.3}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🐱', x, y);
+        }
+
+        // Crtaj putanju
+        function drawPath() {
+            ctx.strokeStyle = '#4CAF50';
+            ctx.lineWidth = gameState.pathWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            ctx.beginPath();
+            ctx.moveTo(gameState.pathPoints[0].x, gameState.pathPoints[0].y);
+            
+            for (let i = 1; i < gameState.pathPoints.length; i++) {
+                ctx.lineTo(gameState.pathPoints[i].x, gameState.pathPoints[i].y);
+            }
+            ctx.stroke();
+            
+            // Start oznaka
+            ctx.fillStyle = '#2196F3';
+            ctx.beginPath();
+            ctx.arc(gameState.pathPoints[0].x, gameState.pathPoints[0].y, 25, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('START', gameState.pathPoints[0].x, gameState.pathPoints[0].y);
+            
+            // Cilj oznaka
+            const end = gameState.pathPoints[gameState.pathPoints.length - 1];
+            ctx.fillStyle = '#FF5722';
+            ctx.beginPath();
+            ctx.arc(end.x, end.y, 30, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 18px Arial';
+            ctx.fillText('CILJ', end.x, end.y);
+        }
+
+        // Crtaj prepreke
+        function drawObstacles() {
+            gameState.obstacles.forEach(obs => {
+                ctx.fillStyle = '#9E9E9E';
+                
+                switch(obs.type) {
+                    case 0: // Krug
+                        ctx.beginPath();
+                        ctx.arc(obs.x, obs.y, obs.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                    case 1: // Kvadrat
+                        ctx.fillRect(obs.x - obs.size, obs.y - obs.size, obs.size * 2, obs.size * 2);
+                        break;
+                    case 2: // Trougao
+                        ctx.beginPath();
+                        ctx.moveTo(obs.x, obs.y - obs.size);
+                        ctx.lineTo(obs.x - obs.size, obs.y + obs.size);
+                        ctx.lineTo(obs.x + obs.size, obs.y + obs.size);
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                }
+            });
+        }
+
+        // Glavna draw funkcija
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Pozadina
+            ctx.fillStyle = '#F5F5F5';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawPath();
+            drawObstacles();
+            drawCharacter(gameState.characterX, gameState.characterY, gameState.isDragging);
+        }
+
+        // Provera da li je karakter na putanji
+        function isOnPath(x, y) {
+            for (let point of gameState.pathPoints) {
+                const dist = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+                if (dist < gameState.tolerance) {
+                    return true;
                 }
             }
-            
-            return { index: closestIndex, distance: minDist };
+            return false;
         }
 
-        function handlePointerDown(e) {
-            e.preventDefault();
-            e.stopPropagation();
+        // Provera pobede
+        function checkWin() {
+            const end = gameState.pathPoints[gameState.pathPoints.length - 1];
+            const dist = Math.sqrt(
+                (gameState.characterX - end.x) ** 2 + 
+                (gameState.characterY - end.y) ** 2
+            );
             
-            const rect = svg.getBoundingClientRect();
-            const scaleX = 600 / rect.width;
-            const scaleY = 600 / rect.height;
-            
-            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            
-            const x = (clientX - rect.left) * scaleX;
-            const y = (clientY - rect.top) * scaleY;
-            
-            const startPoint = currentStrokeData[0];
-            const dist = Math.hypot(startPoint.x - x, startPoint.y - y);
-            
-            if (dist < 180) {
-                isDragging = true;
-            }
-        }
-
-        function handlePointerMove(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const rect = svg.getBoundingClientRect();
-            const scaleX = 600 / rect.width;
-            const scaleY = 600 / rect.height;
-            
-            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            
-            const x = (clientX - rect.left) * scaleX;
-            const y = (clientY - rect.top) * scaleY;
-            
-            const result = projectPointOnPath(x, y);
-            
-            if (result.distance < 140) {
-                const newProgress = result.index / (currentStrokeData.length - 1);
+            if (dist < 40 && !gameState.gameWon) {
+                gameState.gameWon = true;
                 
-                if (newProgress >= currentProgress) {
-                    currentProgress = newProgress;
-                    updateFillPath();
+                // Proveri da li ima još nivoa
+                if (gameState.currentLevel < LEVEL_CONFIGS.length - 1) {
+                    // Postavi tekst za sledeći nivo
+                    document.getElementById('winText').textContent = 
+                        'Prelazimo na sledeći nivo!';
+                    winMessage.classList.add('show');
+                    createConfetti();
                     
-                    const currentPoint = currentStrokeData[result.index];
-                    marker.setAttribute('cx', currentPoint.x);
-                    marker.setAttribute('cy', currentPoint.y);
-                }
-            }
-        }
-
-        function handlePointerUp(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-            e.stopPropagation();
-            
-            isDragging = false;
-            
-            if (currentProgress >= 0.98) {
-                completeStroke();
-            }
-        }
-
-        function completeStroke() {
-            createConfetti(10);
-            
-            const lesson = lessons[currentLessonIndex];
-            const letter = currentPhase === 'letter' 
-                ? lesson.newLetters[currentLetterIndex]
-                : lesson.word[currentWordLetterIndex];
-            
-            const letterData = letterPaths[letter];
-            completedStrokes.push(letterData.strokes[currentStrokeIndex].path);
-            
-            currentStrokeIndex++;
-            
-            if (currentStrokeIndex >= letterData.strokes.length) {
-                if (currentPhase === 'letter') {
-                    currentLetterIndex++;
-                    setTimeout(() => loadNextLetterPhase(), 500);
+                    setTimeout(() => {
+                        winMessage.classList.remove('show');
+                        showLevelTransition(gameState.currentLevel + 1);
+                    }, 2000);
                 } else {
-                    currentWordLetterIndex++;
-                    setTimeout(() => loadNextWordLetter(), 500);
+                    // Završena sva 5 nivoa
+                    document.getElementById('winText').textContent = 
+                        'Čestitamo! Prešao/la si sve nivoe! 🏆';
+                    winMessage.classList.add('show');
+                    createConfetti();
                 }
-            } else {
-                setTimeout(() => loadStroke(letter), 300);
             }
         }
 
-        function completeLesson() {
-            const lesson = lessons[currentLessonIndex];
-            successEmoji.textContent = lesson.emoji;
-            successWord.textContent = lesson.name;
+        // Konfeti efekat
+        function createConfetti() {
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#FFD93D'];
+            const container = document.getElementById('gameContainer');
             
-            createConfetti(70);
-            successOverlay.classList.add('show');
-        }
-
-        function createConfetti(count) {
-            for (let i = 0; i < count; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + '%';
-                confetti.style.top = Math.random() * 100 + '%';
-                confetti.style.background = ['#FF6B6B', '#4CAF50', '#2196F3', '#FFC107', '#9C27B0'][Math.floor(Math.random() * 5)];
-                confetti.style.animation = `confettiFall ${1 + Math.random()}s ease-out forwards`;
-                document.body.appendChild(confetti);
-                
-                setTimeout(() => confetti.remove(), 1500);
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    container.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 30);
             }
         }
 
-        svg.addEventListener('pointerdown', handlePointerDown);
-        svg.addEventListener('pointermove', handlePointerMove);
-        svg.addEventListener('pointerup', handlePointerUp);
-        svg.addEventListener('pointercancel', handlePointerUp);
-        svg.addEventListener('touchstart', handlePointerDown, { passive: false });
-        svg.addEventListener('touchmove', handlePointerMove, { passive: false });
-        svg.addEventListener('touchend', handlePointerUp, { passive: false });
-        svg.addEventListener('touchcancel', handlePointerUp, { passive: false });
-        svg.addEventListener('dragstart', e => e.preventDefault());
+        // Get poziciju sa Canvas-a
+        function getCanvasPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            let clientX, clientY;
+            
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
 
-        document.addEventListener('touchmove', (e) => {
-            if (isDragging) e.preventDefault();
-        }, { passive: false });
+        // Event handlers
+        function handleStart(e) {
+            e.preventDefault();
+            const pos = getCanvasPos(e);
+            const dist = Math.sqrt(
+                (pos.x - gameState.characterX) ** 2 + 
+                (pos.y - gameState.characterY) ** 2
+            );
+            
+            if (dist < gameState.characterSize && !gameState.gameWon) {
+                gameState.isDragging = true;
+                draw();
+            }
+        }
+
+        function handleMove(e) {
+            e.preventDefault();
+            if (!gameState.isDragging || gameState.gameWon) return;
+            
+            const pos = getCanvasPos(e);
+            
+            if (isOnPath(pos.x, pos.y)) {
+                gameState.characterX = pos.x;
+                gameState.characterY = pos.y;
+                draw();
+                checkWin();
+            } else {
+                // Blago treptanje ako je van putanje
+                ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(gameState.characterX, gameState.characterY, gameState.characterSize/2 + 10, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+
+        function handleEnd(e) {
+            e.preventDefault();
+            gameState.isDragging = false;
+            draw();
+        }
+
+        // Mouse events
+        canvas.addEventListener('mousedown', handleStart);
+        canvas.addEventListener('mousemove', handleMove);
+        canvas.addEventListener('mouseup', handleEnd);
+        canvas.addEventListener('mouseleave', handleEnd);
+
+        // Touch events
+        canvas.addEventListener('touchstart', handleStart);
+        canvas.addEventListener('touchmove', handleMove);
+        canvas.addEventListener('touchend', handleEnd);
+
+        // Nova igra - resetuj na nivo 1
+        document.getElementById('newGameBtn').addEventListener('click', initGame);
+
+        // Vrati se na početnu stranicu
+        document.getElementById('homeBtn').addEventListener('click', function() {
+            window.location.href = 'index.html';
+        });
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            draw();
+        });
+
+        // Start
+        resizeCanvas();
+        initGame();
     </script>
 </body>
 </html>

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prebroj Pljeskove</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .kontejner-igre {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            position: relative;
+        }
+
+        .dugme-nazad {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .dugme-nazad:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        h1 {
+            color: #f5576c;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            margin-top: 20px;
+        }
+
+        .podnaslov {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .rezultat-kontejner {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fff5f7;
+            border-radius: 15px;
+        }
+
+        .rezultat-stavka {
+            text-align: center;
+        }
+
+        .rezultat-labela {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .rezultat-vrednost {
+            color: #f5576c;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .igra-oblast {
+            margin: 30px 0;
+        }
+
+        .dugme {
+            background: #f5576c;
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.3em;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            min-width: 200px;
+            font-weight: bold;
+        }
+
+        .dugme:hover {
+            background: #e04158;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .dugme:active {
+            transform: translateY(0);
+        }
+
+        .dugme:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .dugme-broj {
+            background: #f093fb;
+            min-width: 100px;
+            font-size: 2em;
+            padding: 20px;
+            margin: 15px;
+            display: inline-block;
+        }
+
+        .dugme-broj:hover {
+            background: #d77fe8;
+        }
+
+        .dugme-broj.tacan {
+            background: #28a745;
+            animation: tacanOdgovor 0.6s ease;
+        }
+
+        .dugme-broj.netacan {
+            background: #dc3545;
+            animation: netacanOdgovor 0.6s ease;
+        }
+
+        @keyframes tacanOdgovor {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        @keyframes netacanOdgovor {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-15px); }
+            40% { transform: translateX(15px); }
+            60% { transform: translateX(-15px); }
+            80% { transform: translateX(15px); }
+        }
+
+        .poruka {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .poruka.uspeh {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .poruka.greska {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .poruka.info {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .animacija-zvuka {
+            width: 120px;
+            height: 120px;
+            margin: 30px auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .zvucna-ikonica {
+            font-size: 4em;
+            position: relative;
+            z-index: 2;
+        }
+
+        .zvucna-ikonica.aktivan {
+            animation: treperi 0.5s ease infinite;
+        }
+
+        @keyframes treperi {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+        }
+
+        .zvucni-talas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 4px solid #f5576c;
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        .zvucni-talas.aktivan {
+            animation: pulsiranje 1.2s ease-out infinite;
+        }
+
+        @keyframes pulsiranje {
+            0% {
+                transform: scale(0.3);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        .sakriveno {
+            display: none !important;
+        }
+
+        .opis-igre {
+            background: #fff9e6;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #f5576c;
+        }
+
+        .opis-igre p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .kontejner-igre {
+                padding: 25px;
+                padding-top: 60px;
+            }
+
+            .dugme-nazad {
+                top: 15px;
+                left: 15px;
+                padding: 8px 15px;
+                font-size: 0.8em;
+            }
+
+            h1 {
+                font-size: 2em;
+                margin-top: 10px;
+            }
+
+            .podnaslov {
+                font-size: 1em;
+            }
+
+            .dugme {
+                min-width: 140px;
+                padding: 15px 35px;
+                font-size: 1.1em;
+            }
+
+            .dugme-broj {
+                min-width: 80px;
+                font-size: 1.8em;
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .rezultat-vrednost {
+                font-size: 1.5em;
+            }
+
+            .animacija-zvuka {
+                width: 100px;
+                height: 100px;
+            }
+
+            .zvucna-ikonica {
+                font-size: 3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="kontejner-igre">
+        <a href="index.html" class="dugme-nazad">← Vrati se na izbor igrica</a>
+        
+        <h1>👏 Prebroj Pljeskove</h1>
+        <p class="podnaslov">Koliko pljesaka čuješ?</p>
+
+        <div class="rezultat-kontejner">
+            <div class="rezultat-stavka">
+                <div class="rezultat-labela">Tačni</div>
+                <div class="rezultat-vrednost" id="tacni">0</div>
+            </div>
+            <div class="rezultat-stavka">
+                <div class="rezultat-labela">Netačni</div>
+                <div class="rezultat-vrednost" id="netacni">0</div>
+            </div>
+            <div class="rezultat-stavka">
+                <div class="rezultat-labela">Ukupno</div>
+                <div class="rezultat-vrednost" id="ukupno">0</div>
+            </div>
+        </div>
+
+        <div class="igra-oblast">
+            <div id="pocetni-ekran">
+                <div class="opis-igre">
+                    <p><strong>Kako igrati:</strong></p>
+                    <p>🎧 Slušaćeš seriju pljesaka</p>
+                    <p>🧮 Prebroj koliko ih ima ukupno</p>
+                    <p>✅ Izaberi tačan broj</p>
+                </div>
+                <button class="dugme" id="dugme-pocetak">Počni Igru</button>
+            </div>
+
+            <div id="ekran-slusanja" class="sakriveno">
+                <div class="animacija-zvuka" id="animacija-kontejner">
+                    <div class="zvucni-talas" id="talas1"></div>
+                    <div class="zvucni-talas" id="talas2"></div>
+                    <div class="zvucni-talas" id="talas3"></div>
+                    <div class="zvucna-ikonica" id="ikonica">🔊</div>
+                </div>
+                <p class="poruka info">Slušaj pažljivo i broj pljeskove...</p>
+            </div>
+
+            <div id="ekran-odgovora" class="sakriveno">
+                <p class="poruka info" style="font-size: 1.3em;">Koliko pljesaka si čuo?</p>
+                <div id="kontejner-dugmadi"></div>
+            </div>
+
+            <div id="ekran-rezultata" class="sakriveno">
+                <p class="poruka" id="poruka-rezultat"></p>
+                <button class="dugme" id="dugme-sledeci">Sledeća Runda</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Audio kontekst za generisanje zvukova
+        const audioKontekst = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Stanje igre
+        let tacniOdgovori = 0;
+        let netacniOdgovori = 0;
+        let ukupnoOdgovora = 0;
+        let tacanBroj = 0;
+
+        // Elementi DOM-a
+        const pocetniEkran = document.getElementById('pocetni-ekran');
+        const ekranSlusanja = document.getElementById('ekran-slusanja');
+        const ekranOdgovora = document.getElementById('ekran-odgovora');
+        const ekranRezultata = document.getElementById('ekran-rezultata');
+        const dugmePocetak = document.getElementById('dugme-pocetak');
+        const dugmeSledeci = document.getElementById('dugme-sledeci');
+        const porukaRezultat = document.getElementById('poruka-rezultat');
+        const kontejnerDugmadi = document.getElementById('kontejner-dugmadi');
+        const ikonica = document.getElementById('ikonica');
+        const talas1 = document.getElementById('talas1');
+        const talas2 = document.getElementById('talas2');
+        const talas3 = document.getElementById('talas3');
+
+        // Funkcija za uključivanje animacije
+        function ukljuciAnimaciju() {
+            ikonica.classList.add('aktivan');
+            talas1.classList.add('aktivan');
+            talas2.classList.add('aktivan');
+            talas3.classList.add('aktivan');
+        }
+
+        // Funkcija za isključivanje animacije
+        function iskljuciAnimaciju() {
+            ikonica.classList.remove('aktivan');
+            talas1.classList.remove('aktivan');
+            talas2.classList.remove('aktivan');
+            talas3.classList.remove('aktivan');
+        }
+
+        // Funkcija za generisanje jakog, glasnog zvuka pljeska
+        function napraviPljeskZvuk() {
+            const oscilator = audioKontekst.createOscillator();
+            const suma = audioKontekst.createOscillator();
+            const pojacalo = audioKontekst.createGain();
+            const filter = audioKontekst.createBiquadFilter();
+            
+            // Glavni ton
+            oscilator.type = 'triangle';
+            oscilator.frequency.setValueAtTime(1200, audioKontekst.currentTime);
+            oscilator.frequency.exponentialRampToValueAtTime(100, audioKontekst.currentTime + 0.15);
+            
+            // Šum za realističnost
+            suma.type = 'square';
+            suma.frequency.setValueAtTime(150, audioKontekst.currentTime);
+            
+            // Filter za oštriji zvuk
+            filter.type = 'highpass';
+            filter.frequency.setValueAtTime(800, audioKontekst.currentTime);
+            
+            // Povezivanje
+            oscilator.connect(filter);
+            suma.connect(filter);
+            filter.connect(pojacalo);
+            pojacalo.connect(audioKontekst.destination);
+            
+            // Glasnoća - vrlo glasno i jasno
+            pojacalo.gain.setValueAtTime(0.8, audioKontekst.currentTime);
+            pojacalo.gain.exponentialRampToValueAtTime(0.01, audioKontekst.currentTime + 0.15);
+            
+            oscilator.start(audioKontekst.currentTime);
+            oscilator.stop(audioKontekst.currentTime + 0.15);
+            suma.start(audioKontekst.currentTime);
+            suma.stop(audioKontekst.currentTime + 0.15);
+        }
+
+        // KOMPLETNO NOVA FUNKCIJA - Svira TAČNO N pljesaka
+        function odsvirajSekvencu(tacniBrojPljesaka) {
+            return new Promise((resolve) => {
+                // Uključi animaciju
+                ukljuciAnimaciju();
+                
+                let brojOdsviranihPljesaka = 0;
+                let interval = null;
+                
+                // Funkcija za sviranje pojedinačnog pljeska
+                function odsvirajJedanPljeskaj() {
+                    napraviPljeskZvuk();
+                    brojOdsviranihPljesaka++;
+                    
+                    // Proveri da li smo odsvirali sve pljeskove
+                    if (brojOdsviranihPljesaka >= tacniBrojPljesaka) {
+                        clearInterval(interval);
+                        // Sačekaj 500ms pre nego što završiš
+                        setTimeout(() => {
+                            iskljuciAnimaciju();
+                            resolve();
+                        }, 500);
+                    }
+                }
+                
+                // Odsviri prvi pljeskaj odmah
+                odsvirajJedanPljeskaj();
+                
+                // Ako je potrebno više pljesaka, nastavi sa intervalima
+                if (tacniBrojPljesaka > 1) {
+                    // Postavi nasumični interval (brži ili sporiji)
+                    const vremeIntervala = Math.random() > 0.5 ? 
+                        400 + Math.random() * 200 :  // Brži: 400-600ms
+                        700 + Math.random() * 400;   // Sporiji: 700-1100ms
+                    
+                    interval = setInterval(() => {
+                        odsvirajJedanPljeskaj();
+                    }, vremeIntervala);
+                }
+            });
+        }
+
+        // Funkcija za generisanje opcija odgovora
+        function generisiOpcije(tacanOdgovor) {
+            const opcije = [tacanOdgovor];
+            const moguciBrojevi = [2, 3, 4, 5];
+            
+            // Filtriraj moguće brojeve da ne uključuju tačan odgovor
+            const netacniBrojevi = moguciBrojevi.filter(broj => broj !== tacanOdgovor);
+            
+            // Izmešaj netačne brojeve
+            for (let i = netacniBrojevi.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [netacniBrojevi[i], netacniBrojevi[j]] = [netacniBrojevi[j], netacniBrojevi[i]];
+            }
+            
+            // Dodaj prva dva netačna broja
+            opcije.push(netacniBrojevi[0]);
+            opcije.push(netacniBrojevi[1]);
+            
+            // Izmešaj sve opcije
+            for (let i = opcije.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [opcije[i], opcije[j]] = [opcije[j], opcije[i]];
+            }
+            
+            return opcije;
+        }
+
+        // Funkcija za ažuriranje rezultata
+        function azurirajRezultate() {
+            document.getElementById('tacni').textContent = tacniOdgovori;
+            document.getElementById('netacni').textContent = netacniOdgovori;
+            document.getElementById('ukupno').textContent = ukupnoOdgovora;
+        }
+
+        // GLAVNA FUNKCIJA - Pokretanje nove runde
+        async function pokreniRundu() {
+            // Sakrij sve ekrane osim ekrana slušanja
+            pocetniEkran.classList.add('sakriveno');
+            ekranOdgovora.classList.add('sakriveno');
+            ekranRezultata.classList.add('sakriveno');
+            ekranSlusanja.classList.remove('sakriveno');
+            
+            // Resetuj animaciju
+            iskljuciAnimaciju();
+
+            // KRITIČNO: Generiši nasumičan broj između 2 i 5
+            // Math.random() * 4 daje [0, 4), + 2 daje [2, 6), Math.floor daje {2, 3, 4, 5}
+            tacanBroj = Math.floor(Math.random() * 4) + 2;
+            
+            // Console log za testiranje (može se ukloniti u produkciji)
+            console.log('Generisan tačan broj pljesaka:', tacanBroj);
+            
+            // APSOLUTNO KRITIČNO: Odsviri TAČNO onoliko pljesaka koliko je u tacanBroj
+            await odsvirajSekvencu(tacanBroj);
+            
+            // Console log za potvrdu završetka (može se ukloniti u produkciji)
+            console.log('Završena sekvenca, odsvirano pljesaka:', tacanBroj);
+
+            // Potpuno sakrij ekran slušanja i isključi sve animacije
+            ekranSlusanja.classList.add('sakriveno');
+            iskljuciAnimaciju();
+            
+            // Prikaži ekran sa odgovorima
+            ekranOdgovora.classList.remove('sakriveno');
+
+            // Generiši dugmiće sa opcijama
+            const opcije = generisiOpcije(tacanBroj);
+            kontejnerDugmadi.innerHTML = '';
+            
+            opcije.forEach(opcija => {
+                const dugme = document.createElement('button');
+                dugme.className = 'dugme dugme-broj';
+                dugme.textContent = opcija;
+                dugme.onclick = () => proveraOdgovora(opcija, dugme);
+                kontejnerDugmadi.appendChild(dugme);
+            });
+        }
+
+        // Funkcija za proveru odgovora
+        function proveraOdgovora(izabraniBroj, dugme) {
+            // Onemogući sva dugmad
+            const svaDugmad = kontejnerDugmadi.querySelectorAll('.dugme-broj');
+            svaDugmad.forEach(d => d.disabled = true);
+
+            ukupnoOdgovora++;
+
+            // Console log za testiranje
+            console.log('Korisnik izabrao:', izabraniBroj, 'Tačan broj:', tacanBroj);
+
+            // Provera: Da li je izabrani broj TAČNO JEDNAK tačnom broju?
+            if (izabraniBroj === tacanBroj) {
+                tacniOdgovori++;
+                dugme.classList.add('tacan');
+                porukaRezultat.textContent = `✅ Bravo! Tačan odgovor je ${tacanBroj}!`;
+                porukaRezultat.className = 'poruka uspeh';
+            } else {
+                netacniOdgovori++;
+                dugme.classList.add('netacan');
+                
+                // Označi tačan odgovor zelenom bojom
+                svaDugmad.forEach(d => {
+                    if (parseInt(d.textContent) === tacanBroj) {
+                        d.classList.add('tacan');
+                    }
+                });
+                
+                porukaRezultat.textContent = `❌ Netačno. Bilo je ${tacanBroj} pljesaka.`;
+                porukaRezultat.className = 'poruka greska';
+            }
+
+            azurirajRezultate();
+
+            // Prikaži ekran rezultata nakon kratke pauze
+            setTimeout(() => {
+                ekranOdgovora.classList.add('sakriveno');
+                ekranRezultata.classList.remove('sakriveno');
+            }, 1500);
+        }
+
+        // Event listeneri
+        dugmePocetak.addEventListener('click', pokreniRundu);
+        dugmeSledeci.addEventListener('click', pokreniRundu);
+
+        // Inicijalizacija
+        azurirajRezultate();
+    </script>
+</body>
+</html>

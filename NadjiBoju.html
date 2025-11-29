@@ -3,365 +3,600 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nađi Boju - Fokus Igra</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
-
+    <title>Prati Boju - Trening Pažnje</title>
     <style>
-        /* --- CSS STILOVI --- */
-
-        /* Ažurirana Paleta Boja (Jasnije, Zasićenije Pastelve) */
-        :root {
-            --color-bg-light: #f0f8ff; /* Veoma svetlo plava, čista pozadina */
-            --color-primary-task: #34495e; /* Tamno plava za tekst */
-            --color-success-bg: #d4edc1; /* Svetlo zelena za uspeh panel */
-            --color-error-bg: #f8d7da;   /* Svetlo crvena za motivacionu poruku */
-            
-            /* Nove, jasnije boje za kružiće */
-            --color-orange: #ffb74d;   /* Narandžasta */
-            --color-yellow: #fff176;   /* Jasno žuta */
-            --color-green: #81c784;    /* Jako zelena */
-            --color-blue: #4fc3f7;     /* Skroz plava */
-            --color-purple: #9575cd;   /* Nešto tamnija ljubičasta */
-            --color-pink: #f06292;     /* Jača roze */
-
-            --shadow-soft: 0 4px 8px rgba(0, 0, 0, 0.1);
-            --border-radius-large: 20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            background-color: var(--color-bg-light); 
-            color: var(--color-primary-task);
-            transition: background-color 0.5s ease;
+            padding: 20px;
         }
 
-        /* Kontejner igre */
-        .game-container {
-            max-width: 1100px;
+        .kontejner-igre {
             width: 100%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 25px;
+            padding: 35px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+        }
+
+        .zaglavlje {
             text-align: center;
-            padding: 20px 0;
-        }
-
-        /* Kontejner zadatka (Fokusiran i veliki) */
-        .task-box {
-            background-color: #ffffff;
-            padding: 25px 50px;
             margin-bottom: 30px;
-            border-radius: var(--border-radius-large);
-            box-shadow: var(--shadow-soft);
-            font-size: clamp(1.8rem, 5vw, 2.8rem);
-            font-weight: 700;
-            color: var(--color-primary-task);
-            display: inline-block; /* Da se prilagodi sadržaju */
-        }
-        
-        /* Poruka za motivaciju (Netačan odgovor) */
-        #feedbackMessage {
-            min-height: 50px; /* Rezervisan prostor */
-            font-size: clamp(1rem, 3vw, 1.5rem);
-            font-weight: 500;
-            color: #c0392b; /* Tamnija boja za motivaciju */
-            margin-top: -15px; /* Pomeri malo više gore */
-            margin-bottom: 25px;
-            opacity: 0;
-            transition: opacity 0.5s ease;
         }
 
-        #feedbackMessage.visible {
-            opacity: 1;
+        h1 {
+            color: #333;
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        /* Mreža sa kružićima */
-        .color-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            padding: 10px;
+        .uputstvo {
+            color: #555;
+            font-size: 1.4em;
+            line-height: 1.7;
+            margin-bottom: 10px;
         }
 
-        /* Stil za kružiće */
-        .color-circle {
-            width: clamp(90px, 16vw, 130px); /* Veliki, responzivni krug */
-            height: clamp(90px, 16vw, 130px);
+        .prikaz-ciljne-boje {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            text-align: center;
+            border: 4px solid #667eea;
+        }
+
+        .tekst-ciljne-boje {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .uzorak-ciljne-boje {
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
-            cursor: pointer;
-            box-shadow: var(--shadow-soft);
-            /* Smanjenje animacija za fokus */
-            transition: transform 0.2s ease, opacity 0.5s ease, box-shadow 0.2s ease;
-            position: relative; /* Potrebno za 'pop' animaciju */
+            margin: 0 auto;
+            border: 6px solid #fff;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
 
-        /* --- ANIMACIJE I FIDBEK --- */
-
-        /* 1. Hover/Fokus (Blago uvećanje) */
-        .color-circle:not(.hidden):hover {
-            transform: scale(1.03); 
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        /* 2. Tačan odgovor (Nežan Pop & Fade-out) - Zamena za brkanje/treperenje */
-        .pop-fade-out-animation {
-            animation: popAndFade 0.5s forwards;
-            pointer-events: none; /* Onemogući dalje klikove odmah */
-        }
-
-        @keyframes popAndFade {
-            0% { 
-                transform: scale(1.05); /* Blagi pop */
-                opacity: 1;
-                box-shadow: 0 0 15px 5px var(--color-green); /* Svetleći signal uspeha */
-            }
-            100% { 
-                transform: scale(0.8); /* Nežan odlazak */
-                opacity: 0; 
-            }
-        }
-        
-        /* 3. Skrivanje elementa */
-        .hidden {
-            display: none !important;
-        }
-
-        /* Stranica uspeha (popup) */
-        .success-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(212, 237, 193, 0.95); /* Svetlo zelena/uspešna pozadina */
+        .tabla-rezultata {
             display: flex;
-            flex-direction: column;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stavka-rezultata {
+            text-align: center;
+            flex: 1;
+            min-width: 130px;
+        }
+
+        .labela-rezultata {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .vrednost-rezultata {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .vrednost-rezultata.tacno {
+            color: #28a745;
+        }
+
+        .vrednost-rezultata.pogresno {
+            color: #dc3545;
+        }
+
+        .oblast-igre {
+            position: relative;
+            width: 100%;
+            min-height: 450px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            border: 5px solid #ddd;
+            overflow: hidden;
+            margin-bottom: 25px;
+            display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            padding: 40px;
+        }
+
+        .glavni-kvadrat {
+            width: 350px;
+            height: 350px;
+            border-radius: 20px;
+            transition: background-color 0.6s ease, transform 0.2s ease;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            border: 8px solid #fff;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4em;
+            user-select: none;
+        }
+
+        .glavni-kvadrat:hover {
+            transform: scale(1.02);
+        }
+
+        .glavni-kvadrat:active {
+            transform: scale(0.98);
+        }
+
+        .glavni-kvadrat.animacija-tacno {
+            animation: animacijaTacno 0.5s ease;
+        }
+
+        .glavni-kvadrat.animacija-pogresno {
+            animation: animacijaPogresno 0.5s ease;
+        }
+
+        @keyframes animacijaTacno {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1) rotate(5deg); }
+            75% { transform: scale(1.1) rotate(-5deg); }
+        }
+
+        @keyframes animacijaPogresno {
+            0%, 100% { transform: scale(1); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+        }
+
+        .povratna-informacija {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5em;
+            font-weight: bold;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.4s ease;
+            z-index: 100;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.6);
         }
 
-        .success-overlay.visible {
+        .povratna-informacija.prikazi {
             opacity: 1;
-            pointer-events: auto;
         }
 
-        .success-message {
-            font-size: clamp(3rem, 10vw, 6rem);
-            color: var(--color-primary-task);
-            animation: pulse 1s infinite alternate;
+        .povratna-informacija.tacno {
+            color: #28a745;
         }
-        
-        .home-button {
-            margin-top: 30px;
-            padding: 15px 30px;
-            background-color: #ffffff;
+
+        .povratna-informacija.pogresno {
+            color: #dc3545;
+        }
+
+        .poruka-statusa {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            min-height: 45px;
+            margin-bottom: 20px;
+            padding: 18px;
+            background: #fff;
+            border-radius: 12px;
+            border: 3px solid #ddd;
+            line-height: 1.4;
+        }
+
+        .dugme-resetuj {
+            display: block;
+            margin: 0 auto;
+            padding: 16px 45px;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
-            border-radius: 15px;
-            font-size: 1.5rem;
+            border-radius: 30px;
             cursor: pointer;
-            box-shadow: var(--shadow-soft);
-            transition: transform 0.3s ease;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.05); }
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
 
+        .dugme-resetuj:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .dugme-resetuj:active {
+            transform: translateY(0);
+        }
+
+        .dugme-nova-igra {
+    display: block;
+    margin: 15px auto 0;
+    padding: 16px 45px;
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dugme-nova-igra:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+}
+
+.dugme-nova-igra:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+    .dugme-nova-igra {
+        font-size: 1.2em;
+        padding: 14px 35px;
+        margin-top: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dugme-nova-igra {
+        font-size: 1.1em;
+        padding: 12px 30px;
+        margin-top: 10px;
+    }
+}
+
+        @media (max-width: 768px) {
+            .kontejner-igre {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 2.3em;
+            }
+
+            .uputstvo {
+                font-size: 1.2em;
+            }
+
+            .tekst-ciljne-boje {
+                font-size: 1.5em;
+            }
+
+            .uzorak-ciljne-boje {
+                width: 90px;
+                height: 90px;
+            }
+
+            .oblast-igre {
+                min-height: 380px;
+                padding: 30px;
+            }
+
+            .glavni-kvadrat {
+                width: 280px;
+                height: 280px;
+                font-size: 3em;
+            }
+
+            .vrednost-rezultata {
+                font-size: 2.3em;
+            }
+
+            .povratna-informacija {
+                font-size: 3.5em;
+            }
+
+            .poruka-statusa {
+                font-size: 1.3em;
+            }
+
+            .dugme-resetuj {
+                font-size: 1.2em;
+                padding: 14px 35px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .kontejner-igre {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.9em;
+            }
+
+            .uputstvo {
+                font-size: 1.1em;
+            }
+
+            .tekst-ciljne-boje {
+                font-size: 1.3em;
+            }
+
+            .uzorak-ciljne-boje {
+                width: 75px;
+                height: 75px;
+            }
+
+            .oblast-igre {
+                min-height: 320px;
+                padding: 20px;
+            }
+
+            .glavni-kvadrat {
+                width: 220px;
+                height: 220px;
+                font-size: 2.5em;
+                border: 6px solid #fff;
+            }
+
+            .vrednost-rezultata {
+                font-size: 2em;
+            }
+
+            .tabla-rezultata {
+                padding: 18px;
+            }
+
+            .stavka-rezultata {
+                min-width: 100px;
+            }
+
+            .labela-rezultata {
+                font-size: 1em;
+            }
+
+            .povratna-informacija {
+                font-size: 2.8em;
+            }
+
+            .poruka-statusa {
+                font-size: 1.1em;
+                padding: 15px;
+            }
+
+            .dugme-resetuj {
+                font-size: 1.1em;
+                padding: 12px 30px;
+            }
+        }
     </style>
 </head>
 <body>
-
-    <main class="game-container">
-        
-        <div id="taskBox" class="task-box">
-            Zadatak: Pronađi sve <span id="targetColorName" style="color: red;">[Boja]</span> kružiće!
+    <div class="kontejner-igre">
+        <div class="zaglavlje">
+            <h1>🎯 Prati Boju</h1>
+            <p class="uputstvo">Klikni na kvadrat samo kada se pojavi ciljna boja!</p>
         </div>
-        
-        <div id="feedbackMessage"></div>
 
-        <div id="colorGrid" class="color-grid">
+        <div class="prikaz-ciljne-boje">
+            <div class="tekst-ciljne-boje">Prati boju: <span id="imeCiljneBoje"></span></div>
+            <div class="uzorak-ciljne-boje" id="uzorakciljneBoje"></div>
+        </div>
+
+        <div class="tabla-rezultata">
+            <div class="stavka-rezultata">
+                <div class="labela-rezultata">Tačno</div>
+                <div class="vrednost-rezultata tacno" id="tacniRezultat">0</div>
             </div>
-        
-    </main>
+            <div class="stavka-rezultata">
+                <div class="labela-rezultata">Pogrešno</div>
+                <div class="vrednost-rezultata pogresno" id="pogresniRezultat">0</div>
+            </div>
+            <div class="stavka-rezultata">
+                <div class="labela-rezultata">Ukupno</div>
+                <div class="vrednost-rezultata" id="ukupanRezultat">0</div>
+            </div>
+        </div>
 
-    <div id="successOverlay" class="success-overlay">
-        <div class="success-message">🎉 Fantastično! Uspeli ste! 🥳</div>
-        <button class="home-button" onclick="window.location.href='index.html'">Nazad na izbor igara</button>
-        <button class="home-button" onclick="window.location.href='NadjiBoju.html'">Igraj ponovo↻</button>
+        <div class="oblast-igre">
+            <div class="glavni-kvadrat" id="glavniKvadrat">🎨</div>
+            <div class="povratna-informacija" id="povratnaInformacija"></div>
+        </div>
+
+        <div class="poruka-statusa" id="porukaStatusa">Prati kvadrat i čekaj ciljnu boju!</div>
+
+        <button class="dugme-resetuj" id="dugmeResetuj">🔄 Resetuj Igru</button>
+        <button class="dugme-nova-igra" id="dugmeNovaIgra">🎲 Izaberi Novu Igru</button>
     </div>
 
     <script>
-        // --- JAVASCRIPT LOGIKA ---
-
-        const newColors = [
-            { name: "NARANDŽASTI", code: "var(--color-orange)" },
-            { name: "ŽUTI", code: "var(--color-yellow)" },
-            { name: "ZELENI", code: "var(--color-green)" },
-            { name: "PLAVI", code: "var(--color-blue)" },
-            { name: "LJUBIČASTI", code: "var(--color-purple)" },
-            { name: "ROZE", code: "var(--color-pink)" },
-        ];
-
-        const motivationalMessages = [
-            "Nema veze! Idemo dalje, sigurno ćeš pogoditi!",
-            "Sve je u redu, pokušaj ponovo!",
-            "Tako je, fokusiraj se! Možeš ti to!",
-            "Nema predaje, idemo! Sledeći put će biti pravi!",
-            "To nije bio taj, ali je super što pokušavaš!",
-        ];
-
-        let targetColor = null;
-        let targetCount = 0;
-        let foundCount = 0;
-        const totalCircles = 16; // Smanjen broj kružića za bolji fokus (sa 20 na 16)
-
-        const colorGrid = document.getElementById('colorGrid');
-        const targetColorNameEl = document.getElementById('targetColorName');
-        const successOverlay = document.getElementById('successOverlay');
-        const feedbackMessageEl = document.getElementById('feedbackMessage');
-        
-        // Zvuk za tačan odgovor (Mora se zameniti sa pravim zvukom na serveru)
-        // Korišćenje Web Audio API-ja za jednostavan, kratak ton
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-        function playSuccessSound() {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            oscillator.type = 'sine'; // Prijatan, miran ton
-            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // Standardna A nota
-            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+        // Definicija svih dostupnih boja
+        const sveBoje = [
+            { ime: 'CRVENA', vrednost: '#FF0000' },
+            { ime: 'PLAVA', vrednost: '#3498DB' },
+            { ime: 'ZELENA', vrednost: '#1EE0000' },
+            { ime: 'ŽUTA', vrednost: '#FFF200' },
+            { ime: 'LJUBIČASTA', vrednost: '#7E16B8' },
+            { ime: 'NARANDŽASTA', vrednost: '#E67E22' },
+            { ime: 'ROZE', vrednost: '#D91076' },
             
-            // Lagani fade out da ne bude nagao
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+        ];
 
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + 0.3);
+        // Promenljive za stanje igre
+        let ciljnaBoja = null;
+        let trenutnaBoja = null;
+        let brojTacnih = 0;
+        let brojPogresnih = 0;
+        let intervalPromeneBoje = null;
+
+        // DOM elementi
+        const glavniKvadrat = document.getElementById('glavniKvadrat');
+        const povratnaInformacija = document.getElementById('povratnaInformacija');
+        const tacniRezultat = document.getElementById('tacniRezultat');
+        const pogresniRezultat = document.getElementById('pogresniRezultat');
+        const ukupanRezultat = document.getElementById('ukupanRezultat');
+        const porukaStatusa = document.getElementById('porukaStatusa');
+        const dugmeResetuj = document.getElementById('dugmeResetuj');
+        const uzorakciljneBoje = document.getElementById('uzorakciljneBoje');
+        const imeCiljneBoje = document.getElementById('imeCiljneBoje');
+
+        // Funkcija za dobijanje slučajnog elementa iz niza
+        function slucajniElement(niz) {
+            const slucajniIndeks = Math.floor(Math.random() * niz.length);
+            return niz[slucajniIndeks];
         }
 
+        // Funkcija za dobijanje slučajne boje različite od trenutne
+        function slucajnaBoja(osimBoje) {
+            let novaBoja;
+            do {
+                novaBoja = slucajniElement(sveBoje);
+            } while (osimBoje && novaBoja.ime === osimBoje.ime);
+            return novaBoja;
+        }
 
-        // Funkcija za mešanje niza
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
+        // Funkcija za slučajno vreme između 2000ms i 3500ms
+        function slucajnoVreme() {
+            return Math.floor(Math.random() * 500) + 1000;
         }
 
         // Inicijalizacija igre
-        function initGame() {
-            targetColor = newColors[Math.floor(Math.random() * newColors.length)];
+        function inicirajIgru() {
+            // Nasumično izaberi ciljnu boju
+            ciljnaBoja = slucajniElement(sveBoje);
             
-            targetColorNameEl.textContent = targetColor.name;
-            // Korišćenje JavaScript-a za preuzimanje vrednosti CSS varijable
-            const targetColorValue = getComputedStyle(document.documentElement).getPropertyValue(targetColor.code.replace('var(', '').replace(')', ''));
-            targetColorNameEl.style.color = targetColorValue; 
-
-            colorGrid.innerHTML = '';
-            targetCount = 0;
-            foundCount = 0;
-            successOverlay.classList.remove('visible');
-            feedbackMessageEl.classList.remove('visible');
-
-            let circleData = [];
-            const numTargetCircles = Math.floor(Math.random() * (6 - 3 + 1)) + 3; // 3 do 6 ciljanih
-
-            for (let i = 0; i < totalCircles; i++) {
-                let color;
-                let isTarget = false;
-
-                if (i < numTargetCircles) {
-                    color = targetColor;
-                    isTarget = true;
-                    targetCount++;
-                } else {
-                    let nonTargetColors = newColors.filter(c => c.name !== targetColor.name);
-                    color = nonTargetColors[Math.floor(Math.random() * nonTargetColors.length)];
-                    isTarget = false;
-                }
-                
-                circleData.push({ color: color, isTarget: isTarget });
-            }
-
-            shuffleArray(circleData);
-
-            circleData.forEach((data, index) => {
-                const circle = document.createElement('div');
-                circle.classList.add('color-circle');
-                circle.dataset.index = index;
-                circle.style.backgroundColor = data.color.code;
-                circle.dataset.isTarget = data.isTarget;
-
-                circle.addEventListener('click', handleCircleClick);
-                colorGrid.appendChild(circle);
-            });
+            // Prikaži ciljnu boju
+            uzorakciljneBoje.style.backgroundColor = ciljnaBoja.vrednost;
+            imeCiljneBoje.textContent = ciljnaBoja.ime;
+            
+            // Postavi početnu boju (različitu od ciljne)
+            trenutnaBoja = slucajnaBoja(ciljnaBoja);
+            glavniKvadrat.style.backgroundColor = trenutnaBoja.vrednost;
+            
+            // Pokreni promenu boja
+            pocniPromehuBoja();
         }
 
-        // Funkcija za obradu klika
-        function handleCircleClick(event) {
-            const circle = event.target;
-            const isTarget = circle.dataset.isTarget === 'true';
-
-            if (circle.classList.contains('pop-fade-out-animation') || circle.classList.contains('hidden')) {
-                return; 
-            }
-
-            // Ukloni prethodnu poruku
-            feedbackMessageEl.classList.remove('visible');
-
-            if (isTarget) {
-                // Tačan odgovor: Nežan Pop & Fade-out + Zvuk
-                foundCount++;
-                playSuccessSound();
-                circle.removeEventListener('click', handleCircleClick);
+        // Pokreni nasumičnu promenu boja
+        function pocniPromehuBoja() {
+            function promeniBogu() {
+                // Izaberi nasumičnu novu boju (različitu od trenutne)
+                trenutnaBoja = slucajnaBoja(trenutnaBoja);
+                glavniKvadrat.style.backgroundColor = trenutnaBoja.vrednost;
                 
-                // Pokreni animaciju
-                circle.classList.add('pop-fade-out-animation');
+                // Zakaži sledeću promenu sa nasumičnim vremenom
+                intervalPromeneBoje = setTimeout(promeniBogu, slucajnoVreme());
+            }
+            
+            // Prva promena nakon nasumičnog vremena
+            intervalPromeneBoje = setTimeout(promeniBogu, slucajnoVreme());
+        }
 
-                setTimeout(() => {
-                    // Potpuno uklanjanje elementa nakon animacije
-                    circle.remove(); 
-                    
-                    if (foundCount === targetCount) {
-                        setTimeout(showSuccessScreen, 500); 
-                    }
-                }, 500); // Vreme jednako trajanju animacije
+        // Zaustavi promenu boja
+        function zaustariPromehuBoja() {
+            if (intervalPromeneBoje) {
+                clearTimeout(intervalPromeneBoje);
+                intervalPromeneBoje = null;
+            }
+        }
 
+        // Proveri da li je kliknuta ciljna boja
+        function proveriKlik() {
+            if (trenutnaBoja.ime === ciljnaBoja.ime) {
+                // Tačan odgovor
+                brojTacnih++;
+                tacniRezultat.textContent = brojTacnih;
+                ukupanRezultat.textContent = brojTacnih - brojPogresnih;
+                prikaziPovratnuInformaciju('✓ BRAVO!', 'tacno');
+                glavniKvadrat.classList.add('animacija-tacno');
+                porukaStatusa.textContent = 'Odlično! Nastavi tako!';
+                porukaStatusa.style.color = '#28a745';
+                porukaStatusa.style.borderColor = '#28a745';
             } else {
-                // Pogrešan odgovor: SAMO vizuelni fidbek motivacionom porukom
-                const message = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
-                feedbackMessageEl.textContent = message;
-                feedbackMessageEl.classList.add('visible');
-                
-                // Opciono: Blagi, kratki vizuelni signal na samom kružiću (samo promena senke)
-                circle.style.boxShadow = `0 0 10px 3px var(--color-purple)`;
-                setTimeout(() => {
-                    circle.style.boxShadow = `var(--shadow-soft)`;
-                }, 300);
+                // Pogrešan odgovor
+                brojPogresnih++;
+                pogresniRezultat.textContent = brojPogresnih;
+                ukupanRezultat.textContent = brojTacnih - brojPogresnih;
+                prikaziPovratnuInformaciju('✗ GREŠKA', 'pogresno');
+                glavniKvadrat.classList.add('animacija-pogresno');
+                porukaStatusa.textContent = `To je ${trenutnaBoja.ime}! Čekaj ${ciljnaBoja.ime}!`;
+                porukaStatusa.style.color = '#dc3545';
+                porukaStatusa.style.borderColor = '#dc3545';
             }
+            
+            // Ukloni CSS klase animacije nakon završetka
+            setTimeout(() => {
+                glavniKvadrat.classList.remove('animacija-tacno', 'animacija-pogresno');
+            }, 500);
         }
-        
-        // Prikaz ekrana uspeha
-        function showSuccessScreen() {
-            successOverlay.classList.add('visible');
+
+        // Prikaži povratnu informaciju
+        function prikaziPovratnuInformaciju(tekst, tip) {
+            povratnaInformacija.textContent = tekst;
+            povratnaInformacija.className = `povratna-informacija prikazi ${tip}`;
+            
+            setTimeout(() => {
+                povratnaInformacija.className = 'povratna-informacija';
+            }, 800);
         }
+
+        // Event listener za klik na glavni kvadrat
+        glavniKvadrat.addEventListener('click', proveriKlik);
+
+        // Touch event za mobilne uređaje
+        glavniKvadrat.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            proveriKlik();
+        });
+
+        // Resetuj igru
+        dugmeResetuj.addEventListener('click', () => {
+            // Zaustavi trenutnu promenu boja
+            zaustariPromehuBoja();
+            
+            // Resetuj rezultate
+            brojTacnih = 0;
+            brojPogresnih = 0;
+            tacniRezultat.textContent = '0';
+            pogresniRezultat.textContent = '0';
+            ukupanRezultat.textContent = '0';
+            porukaStatusa.textContent = 'Prati kvadrat i čekaj ciljnu boju!';
+            porukaStatusa.style.color = '#333';
+            porukaStatusa.style.borderColor = '#ddd';
+            
+            // Ponovo inicijalizuj igru sa novom nasumičnom ciljnom bojom
+            inicirajIgru();
+        });
 
         // Pokreni igru pri učitavanju stranice
-        window.onload = initGame;
-        
+        inicirajIgru();
+        // Dugme za povratak na index.html
+const dugmeNovaIgra = document.getElementById('dugmeNovaIgra');
+
+dugmeNovaIgra.addEventListener('click', () => {
+    window.location.href = 'index.html';
+});
     </script>
 </body>
 </html>
