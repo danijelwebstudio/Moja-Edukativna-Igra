@@ -432,16 +432,18 @@
 
     <script>
         // Definicija svih dostupnih boja
-        const sveBoje = [
-            { ime: 'CRVENA', vrednost: '#FF0000' },
-            { ime: 'PLAVA', vrednost: '#3498DB' },
-            { ime: 'ZELENA', vrednost: '#1EE0000' },
-            { ime: 'ŽUTA', vrednost: '#FFF200' },
-            { ime: 'LJUBIČASTA', vrednost: '#7E16B8' },
-            { ime: 'NARANDŽASTA', vrednost: '#E67E22' },
-            { ime: 'ROZE', vrednost: '#D91076' },
-            
-        ];
+        // Definicija svih dostupnih boja
+const sveBoje = [
+    { ime: 'CRVENA', vrednost: '#FF0000' },
+    { ime: 'PLAVA', vrednost: '#3498DB' },
+    { ime: 'ZELENA', vrednost: '#00FF00' }, // <-- ISPRAVLJENO
+    { ime: 'ŽUTA', vrednost: '#FFF200' },
+    { ime: 'LJUBIČASTA', vrednost: '#7E16B8' },
+    { ime: 'NARANDŽASTA', vrednost: '#E67E22' },
+    { ime: 'ROZE', vrednost: '#D91076' },
+];
+
+// ... ostatak koda je nepromenjen
 
         // Promenljive za stanje igre
         let ciljnaBoja = null;
